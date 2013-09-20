@@ -70,7 +70,7 @@ class GrantCommand(AdminCommand):
         self.printUserInfo(avatar, args.id)
         if avatar.isAdmin():
             print "User seems to already has administrator privileges"
-        if console.yesno("Are you sure to grant administrator privileges to this user?"):
+        elif console.yesno("Are you sure to grant administrator privileges to this user?"):
             adminList = info.HelperMaKaCInfo.getMaKaCInfoInstance().getAdminList()
             adminList.grant(avatar)
             avatar.activateAccount()
@@ -87,7 +87,7 @@ class RevokeCommand(AdminCommand):
         self.printUserInfo(avatar, args.id)
         if not avatar.isAdmin():
             print "User seems to has no administrator privileges"
-        if console.yesno("Are you sure to revoke administrator privileges from this user?"):
+        elif console.yesno("Are you sure to revoke administrator privileges from this user?"):
             adminList = info.HelperMaKaCInfo.getMaKaCInfoInstance().getAdminList()
             adminList.revoke(avatar)
             print "Administrator privileges revoked successfully"

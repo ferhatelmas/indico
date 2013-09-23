@@ -21,6 +21,7 @@ import collections
 from flask import session, request
 import os
 import random
+import string
 import time
 import urllib
 from indico.util import json
@@ -5760,7 +5761,7 @@ class WConfStaticAuthorIndex(wcomponents.WTemplated):
     def _getLetterIndex(self):
         url=urlHandlers.UHStaticConfAuthorIndex.getRelativeURL()
         res=[]
-        for letter in ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']:
+        for letter in string.ascii_lowercase:
             res.append("""<a href="%s#letter_%s">%s</a>"""%(str(url),letter, letter))
         return " | ".join(res)
 

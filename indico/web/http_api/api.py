@@ -236,7 +236,24 @@ class HTTPAPIHook(object):
 
         extraFunc = getattr(self, method_name + '_extra', None)
         extra = extraFunc(aw, resultList) if extraFunc else None
+        self._secureEmail(resultList)
         return resultList, extra, complete, self.SERIALIZER_TYPE_MAP
+
+    def _secureEmail(self, result):
+        def hash(email):
+            import hashlib
+            return hashlib.sha1(email).hexdigest()
+        if isinstance(result, list):
+            map(self._secureEmail, result)
+        elif isinstance(result, dict):
+            for k, v in result.items():
+                if k == 'email':
+                    if isinstance(v, list):
+                        result[k] = map(hash, v)
+                    else:
+                        result[k] = hash(v)
+                else:
+                    self._secureEmail(v)
 
 
 class DataFetcher(object):

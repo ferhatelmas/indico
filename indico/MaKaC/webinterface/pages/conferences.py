@@ -17,6 +17,7 @@
 ## You should have received a copy of the GNU General Public License
 ## along with Indico;if not, see <http://www.gnu.org/licenses/>.
 
+import calendar
 import collections
 from flask import session, request
 import os
@@ -86,7 +87,7 @@ from MaKaC.webinterface.general import WebFactory
 def stringToDate( str ):
     #Don't delete this dictionary inside comment. Its purpose is to add the dictionary in the language dictionary during the extraction!
     #months = { _("January"):1, _("February"):2, _("March"):3, _("April"):4, _("May"):5, _("June"):6, _("July"):7, _("August"):8, _("September"):9, _("October"):10, _("November"):11, _("December"):12 }
-    months = { "January":1, "February":2, "March":3, "April":4, "May":5, "June":6, "July":7, "August":8, "September":9, "October":10, "November":11, "December":12 }
+    months = dict((name, index) for index, name in enumerate(calendar.month_name[1:], start=1))
     [ day, month, year ] = str.split("-")
     return datetime(int(year),months[month],int(day))
 

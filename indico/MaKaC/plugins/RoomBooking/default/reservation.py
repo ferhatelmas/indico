@@ -346,6 +346,10 @@ class Reservation( Persistent, ReservationBase, Observable ):
                     if not containsExactly_OR_containsAny( resvEx.bookedForName, resvCandidate.bookedForName ):
                         continue
 
+                if resvEx.bookedForUser != None:
+                    if resvCandidate.bookedForUser != resvEx.bookedForUser:
+                        continue
+
                 if resvEx.reason != None:
                     if resvCandidate.reason == None:
                         continue

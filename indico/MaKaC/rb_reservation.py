@@ -25,13 +25,11 @@ Responsible: Piotr Wlodarek
 from datetime import datetime, timedelta, date
 from MaKaC.rb_tools import iterdays, weekNumber, doesPeriodOverlap, overlap, Period, Impersistant, checkPresence, fromUTC, toUTC, formatDateTime, formatDate,\
     datespan
-from MaKaC.rb_room import RoomBase
 from MaKaC.rb_location import ReservationGUID, Location, CrossLocationQueries
 from MaKaC.accessControl import AccessWrapper
 from MaKaC.errors import MaKaCError
 from MaKaC.user import AvatarHolder, Avatar
 from MaKaC.common.Configuration import Config
-from MaKaC.common.info import HelperMaKaCInfo
 from MaKaC.common.cache import GenericCache
 from MaKaC.conference import ConferenceHolder
 from indico.util.fossilize import Fossilizable, fossilizes
@@ -1116,16 +1114,15 @@ class ReservationBase( Fossilizable ):
         liveValid, liveCancelled, liveRejected
         archivalValid, archivalCancelled, archivalRejected
         """
-        location = Location.getDefaultLocation().friendlyName
         allResvs = ReservationBase.getReservations( rooms = [ room ] )     # Run Forest, run! :)
-        stats = { \
-                     'liveValid': 0,
-                     'liveCancelled': 0,
-                     'liveRejected': 0,
-                     'archivalValid': 0,
-                     'archivalCancelled': 0,
-                     'archivalRejected': 0,
-                 }
+        stats = {
+                'liveValid': 0,
+                'liveCancelled': 0,
+                'liveRejected': 0,
+                'archivalValid': 0,
+                'archivalCancelled': 0,
+                'archivalRejected': 0,
+                }
         for r in allResvs:
             if r.isArchival:
                 if r.isCancelled:
@@ -1337,11 +1334,8 @@ class ReservationBase( Fossilizable ):
         Returns True if avatar is the one who inserted this
         reservation. False otherwise.
         """
-        if not self.createdBy:
-            return None
-        if self.createdBy == avatar.id:
-            return True
-        return False
+        if self.createdBy:
+            return self.createdBy == avatar.id
 
     def isBookedFor(self, user):
         """
@@ -1359,10 +1353,7 @@ class ReservationBase( Fossilizable ):
         if self.createdBy == None:
             return None
         user = AvatarHolder().getById( self.createdBy )
-        if user == None:
-            return None
         return user
-
 
     def splitToPeriods( self, endDT = None, startDT = None ):
         """
@@ -1489,22 +1480,16 @@ class ReservationBase( Fossilizable ):
         Util method used for returning the contact emails in a list in case
         the contact email string contains more than one address
         """
-        if self.contactEmail != None and self.contactEmail != "":
-            return self.contactEmail.split(",")
-        else :
+        if self.contactEmail == None:
             return []
+        return [email.strip() for email in self.contactEmail.split(',')]
 
     def _getNotificationEmailList( self ):
         """
         Util method used for returning the notification emails in a list in case
         the notification email custom attribute string contains more than one address
         """
-        addrs = []
-        addr = self.room.customAtts.get( 'notification email', "" ).strip()
-        if addr:
-                addrs = addr.split(',')
-
-        return addrs
+        return [addr.strip() for addr in self.room.customAtts.get('notification email', '').split(',')]
 
     def _getBookedForUser(self):
         if not self.bookedForId:

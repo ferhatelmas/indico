@@ -41,13 +41,13 @@ from MaKaC.common.fossilize import Fossilizable, fossilizes
 from pytz import all_timezones
 from MaKaC.plugins.base import PluginsHolder
 
-from indico.util.caching import order_dict
 from indico.util.decorators import cached_classproperty
 from indico.util.event import truncate_path
 from indico.util.redis import write_client as redis_write_client
 import indico.util.redis.avatar_links as avatar_links
 
-"""Contains the classes that implement the user management subsystem
+"""
+Contains the classes that implement the user management subsystem
 """
 
 class Group(Persistent, Fossilizable):
@@ -150,7 +150,7 @@ class Group(Persistent, Fossilizable):
             try:
                 if m.containsMember(member):
                     return 1
-            except AttributeError, e:
+            except AttributeError:
                 continue
         return 0
 
@@ -561,8 +561,8 @@ class Avatar(Persistent, Fossilizable):
     def isNotConfirmed(self):
         return self.status == "Not confirmed"
 
-    def setId(self, id):
-        self.id = str(id)
+    def setId(self, uid):
+        self.id = str(uid)
 
     def getId(self):
         return self.id
@@ -833,16 +833,16 @@ class Avatar(Persistent, Fossilizable):
         return result
 
 
-    def getIdentityById(self, id, tag):
+    def getIdentityById(self, pid, tag):
         """ Returns a PIdentity object given an authenticator name and the identity's login
-            :param id: the login string for this identity
-            :type id: str
+            :param pid: the login string for this identity
+            :type pid: str
             :param tag: the name of an authenticator, e.g. 'Local', 'LDAP', etc
             :type tag: str
         """
 
         for Id in self.identities:
-            if Id.getAuthenticatorTag() == tag and Id.getLogin() == id:
+            if Id.getAuthenticatorTag() == tag and Id.getLogin() == pid:
                 return Id
         return None
 
@@ -867,7 +867,7 @@ class Avatar(Persistent, Fossilizable):
         try:
             if self.registrants:
                 pass
-        except AttributeError, e:
+        except AttributeError:
             self.registrants = {}
             self._p_changed = 1
         return self.registrants
@@ -989,7 +989,6 @@ class Avatar(Persistent, Fossilizable):
         resvEx.createdBy = str(self.id)
         resvEx.isCancelled = None
         resvEx.isRejected = None
-        resvEx.isArchival = None
 
         myResvs = CrossLocationQueries.getReservations(resvExample = resvEx)
         return myResvs
@@ -1011,7 +1010,6 @@ class Avatar(Persistent, Fossilizable):
         resvEx = ReservationBase()
         resvEx.isCancelled = None
         resvEx.isRejected = None
-        resvEx.isArchival = None
 
         myResvs = CrossLocationQueries.getReservations(resvExample = resvEx, rooms = myRooms)
         return myResvs
@@ -1211,16 +1209,13 @@ class AvatarHolder(ObjectHolder):
                     return False
         return True
 
-
-
-
-    def getById(self, id):
+    def getById(self, uid):
         try:
-            return ObjectHolder.getById(self, id)
+            return ObjectHolder.getById(self, uid)
         except:
             pass
         try:
-            authId, extId = id.split(":")
+            authId, extId = uid.split(":")
         except:
             return None
         av = self.match({"email":extId}, searchInAuthenticators=False)
@@ -1234,21 +1229,19 @@ class AvatarHolder(ObjectHolder):
         self.add(av)
         return av
 
-
-    def add(self,av):
+    def add(self, av):
         """
-            Before adding the user, check if the email address isn't used
+        Before adding the user, check if the email address isn't used
         """
-        if av.getEmail() is None or av.getEmail()=="":
+        if av.getEmail() is None or av.getEmail() == "":
             raise UserError(_("User not created. You must enter an email address"))
         emailmatch = self.match({'email': av.getEmail()}, exact=1, searchInAuthenticators=False)
         if emailmatch != None and len(emailmatch) > 0 and emailmatch[0] != '':
             raise UserError(_("User not created. The email address %s is already used.")% av.getEmail())
-        id = ObjectHolder.add(self,av)
+        uid = ObjectHolder.add(self, av)
         for i in self._indexes:
             indexes.IndexesHolder().getById(i).indexUser(av)
-        return id
-
+        return uid
 
     def mergeAvatar(self, prin, merged):
         #replace merged by prin in all object where merged is
@@ -1419,15 +1412,57 @@ class AvatarHolder(ObjectHolder):
         # add merged email and logins to prin and merge users
         for mail in merged.getEmails():
             prin.addSecondaryEmail(mail)
-        for id in merged.getIdentityList():
-            id.setUser(prin)
-            prin.addIdentity(id)
+        for identity in merged.getIdentityList():
+            identity.setUser(prin)
+            prin.addIdentity(identity)
 
         merged.mergeTo(prin)
 
         # reindex prin email
         email.unindexUser(prin)
         email.indexUser(prin)
+
+        # merge room keeping info (related to #1323)
+        def __getReservations(createdBy=None, bookedForUser=None):
+            from MaKaC.rb_location import CrossLocationQueries
+            from MaKaC.rb_reservation import ReservationBase
+
+            resvEx = ReservationBase()
+            if createdBy:
+                resvEx.createdBy = createdBy.getId()
+            if bookedForUser:
+                resvEx.bookedForUser = bookedForUser
+            return CrossLocationQueries.getReservations(resvExample=resvEx)
+
+        def __updateUserReservationsIndex(pid, mid):
+            from MaKaC.plugins.RoomBooking.default.reservation import Reservation
+            root = Reservation.getUserReservationsIndexRoot()
+            pidls = root.get(pid, [])
+            midls = root.get(mid, [])
+            pidls.extend(midls)
+            root[pid] = pidls
+
+        def __updateNameEmailAndPhone(reservation, prin, merged):
+            oldEmails = reservation._getContactEmailList()
+            newEmails = [prin.getEmail()] + [e for e in merged.getEmails() if not e in oldEmails]
+            reservation.contactEmail = ','.join(newEmails)
+            reservation.contactPhone = prin.getPhone()
+            reservation.bookedForName = prin.getFullName()
+
+        # createdBy links
+        for reservation in __getReservations(createdBy=merged):
+            reservation.createdBy = prin.getId()
+            reservation.update()
+             # assert((reservation in __getReservations(createdBy=prin)) == True)
+        __updateUserReservationsIndex(prin.getId(), merged.getId())
+
+
+        # bookedForUser links
+        for reservation in __getReservations(bookedForUser=merged):
+            __updateNameEmailAndPhone(reservation, prin, merged)
+            reservation.bookedForUser = prin
+            reservation.update()
+            # assert((reservation in __getReservations(bookedForUser=prin)) == True)
 
     def unmergeAvatar(self, prin, merged):
         if not merged in prin.getMergeFromList():
@@ -1445,9 +1480,9 @@ class AvatarHolder(ObjectHolder):
         for mail in merged.getEmails():
             prin.removeSecondaryEmail(mail)
 
-        for id in merged.getIdentityList():
-            prin.removeIdentity(id)
-            id.setUser(merged)
+        for identity in merged.getIdentityList():
+            prin.removeIdentity(identity)
+            identity.setUser(merged)
 
         self.add(merged)
 
@@ -1480,13 +1515,13 @@ class PrincipalHolder:
         self.__gh = GroupHolder()
         self.__ah = AvatarHolder()
 
-    def getById(self, id):
+    def getById(self, eid):
         try:
-            prin = self.__gh.getById(id)
+            prin = self.__gh.getById(eid)
             return prin
-        except KeyError, e:
+        except KeyError:
             pass
-        prin = self.__ah.getById(id)
+        prin = self.__ah.getById(eid)
         return prin
 
     def match(self, element_id, exact=1, searchInAuthenticators=True):
@@ -1580,16 +1615,16 @@ class PersonalBasket(Persistent):
         self._p_changed = 1
         return True
 
-    def deleteUser(self, user_id):
-        res = self._users.pop(user_id, None)
+    def deleteUser(self, uid):
+        res = self._users.pop(uid, None)
         self._p_changed = 1
         return res is not None
 
     def hasElement(self, element):
         return element.getId() in self.__findDict(element)
 
-    def hasUserId(self, id):
-        return self._users.has_key(id)
+    def hasUserId(self, uid):
+        return self._users.has_key(uid)
 
     def getUsers(self):
         return self._users

@@ -126,6 +126,14 @@
                     <tr>
                         <td class="maincell">
                             <span class="formTitle" style="border-bottom-width: 0px">${bookMessage}ing (${ reservation.room.name })</span><br /> <!-- PRE-Booking or Booking -->
+
+                            <!-- Warning for pre-bookings -->
+                            % if isPreBooking:
+                                <br />
+                                <span class="actionFailed">${ _("Beware this booking is not confirmed yet!") }</span>
+                                <br />
+                            % endif
+
                             % if actionSucceeded:
                                 <br />
                                 <span class="actionSucceeded">${ title }</span>

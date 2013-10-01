@@ -4622,7 +4622,8 @@ class WRoomBookingDetails( WTemplated ):
             vars["cloneURL"] = urlHandlers.UHConfModifRoomBookingCloneBooking.getURL(self._resv)
 
         vars["bookMessage"] = "Book"
-        if not self._resv.isConfirmed:
+        vars["isPreBooking"] = not self._resv.isConfirmed
+        if vars["isPreBooking"]:
             vars["bookMessage"] = "PRE-Book"
 
         return vars

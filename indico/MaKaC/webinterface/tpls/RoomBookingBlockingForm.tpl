@@ -27,7 +27,7 @@
                     <tr>
                         <td class="maincell">
                             % if hasErrors:
-                                <span style="color: red; margin-left: 6px;"> ${ _("Saving failed.")}</span><br /><br />
+                                <span style="color: red; margin-left: 6px;"> ${ _("Saving failed.")}&nbsp;${ hasErrors }</span><br /><br />
                             % endif
                             <br />
                             <table width="100%" align="left" border="0">

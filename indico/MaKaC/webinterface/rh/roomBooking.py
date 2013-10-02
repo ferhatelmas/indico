@@ -2450,6 +2450,16 @@ class RHRoomBookingBlockingList(RHRoomBookingBase):
 
 class RHRoomBookingBlockingForm(RHRoomBookingBase):
 
+    def __isOverlapping(self):
+        from MaKaC.plugins.RoomBooking.default.roomblocking import RoomBlocking
+        for block in RoomBlocking.getAll():
+            # time overlapping
+            if not (block.startDate > self._endDate or block.endDate < self._startDate):
+                # room overlapping
+                if any(block.getBlockedRoom(room) for room in self._blockedRooms):
+                    return True
+        return False
+
     def _checkParams(self, params):
 
         self._action = params.get('action')
@@ -2463,7 +2473,7 @@ class RHRoomBookingBlockingForm(RHRoomBookingBase):
             self._block.startDate = date.today()
             self._block.endDate = date.today()
 
-        self._hasErrors = False
+        self._hasErrors = ''
         if self._action == 'save':
             from MaKaC.services.interface.rpc import json
             self._reason = params.get('reason', '').strip()
@@ -2481,9 +2491,11 @@ class RHRoomBookingBlockingForm(RHRoomBookingBase):
             self._allowedUsers = [RoomBlockingPrincipal.getByTypeId(fossil['_type'], fossil['id']) for fossil in allowedUsers]
 
             if not self._reason or not self._blockedRooms:
-                self._hasErrors = True
+                self._hasErrors = _('Please check blocked rooms and reason for blocking.')
             elif self._createNew and (not self._startDate or not self._endDate or self._startDate > self._endDate):
-                self._hasErrors = True
+                self._hasErrors = _('Please check your blocking dates.')
+            elif self.__isOverlapping():
+                self._hasErrors = _('Your blocking is overlapping with other blockings.')
 
     def _checkProtection(self):
         RHRoomBookingBase._checkProtection(self)

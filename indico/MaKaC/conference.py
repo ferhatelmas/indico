@@ -9286,7 +9286,7 @@ class Contribution(CommonObjectBase, Locatable):
 
     def setReviewing( self, newReviewing ):
         if self.getReviewing() != None:
-            raise MaKaCError( _("The reviewing maretial for this contribution has already been set"), _("Contribution"))
+            raise MaKaCError( _("The reviewing material for this contribution has already been set"), _("Contribution"))
         self.reviewing=newReviewing
         self.reviewing.setOwner( self )
         self.notifyModification()

@@ -364,7 +364,7 @@ class WPAdminPlugins( WPAdminsBase ):
 
         self._tabs["Main"] = self._tabCtrl.newTab("Main", _("Main"), urlHandlers.UHAdminPlugins.getURL())
 
-        pluginTypes = PluginsHolder().getPluginTypes(doSort = True)
+        pluginTypes = PluginsHolder().getPluginTypes(doSort=True)
         for pluginType in pluginTypes:
             if pluginType.isVisible() and pluginType.isActive():
                 self._tabs[pluginType.getId()] = self._tabCtrl.newTab(pluginType.getName(), pluginType.getName(),
@@ -1053,33 +1053,29 @@ class WUserManagement(wcomponents.WTemplated):
     def getVars(self):
         vars = wcomponents.WTemplated.getVars(self)
         minfo = info.HelperMaKaCInfo.getMaKaCInfoInstance()
-        iconDisabled = str(Config.getInstance().getSystemIconURL("disabledSection"))
-        iconEnabled = str(Config.getInstance().getSystemIconURL("enabledSection"))
+        tpl = """<input type="checkbox" onclick="window.location='{url}';
+                 return false;" {checked} /> _("{action}")"""
+        checked_tpl = ('', 'checked="true"')
         vars["accountCreationData"] = ""
+
         url = urlHandlers.UHUserManagementSwitchAuthorisedAccountCreation.getURL()
+        vars["accountCreationData"] += i18nformat(tpl.format(url=url,
+            checked=checked_tpl[minfo.getAuthorisedAccountCreation()],
+            action="Public Account Creation"))
 
-        if minfo.getAuthorisedAccountCreation():
-            icon = iconEnabled
-        else:
-            icon = iconDisabled
+        vars["accountCreationData"] += '<br/>'
 
-        vars["accountCreationData"] += i18nformat("""<a href="%s"><img src="%s" border="0"> _("Public Account Creation")</a>""") % (str(url), icon)
         url = urlHandlers.UHUserManagementSwitchNotifyAccountCreation.getURL()
+        vars["accountCreationData"] += i18nformat(tpl.format(url=url,
+            checked=checked_tpl[minfo.getNotifyAccountCreation()],
+            action="Notify Account Creation by Email"))
 
-        if minfo.getNotifyAccountCreation():
-            icon = iconEnabled
-        else:
-            icon = iconDisabled
+        vars["accountCreationData"] += '<br/>'
 
-        vars["accountCreationData"] += i18nformat("""<br><a href="%s"><img src="%s" border="0"> _("Notify Account Creation by Email")</a>""") % (str(url), icon)
         url = urlHandlers.UHUserManagementSwitchModerateAccountCreation.getURL()
-
-        if minfo.getModerateAccountCreation():
-            icon = iconEnabled
-        else:
-            icon = iconDisabled
-
-        vars["accountCreationData"] += i18nformat("""<br><a href="%s"><img src="%s" border="0"> _("Moderate Account Creation")</a>""") % (str(url), icon)
+        vars["accountCreationData"] += i18nformat(tpl.format(url=url,
+            checked=checked_tpl[minfo.getModerateAccountCreation()],
+            action="Moderate Account Creation"))
 
         return vars
 
@@ -2261,14 +2257,13 @@ class WRoomBookingPluginAdmin( wcomponents.WTemplated ):
         vars = wcomponents.WTemplated.getVars( self )
         minfo = info.HelperMaKaCInfo.getMaKaCInfoInstance()
 
-        iconDisabled = str(Config.getInstance().getSystemIconURL( "disabledSection" ))
-        iconEnabled = str(Config.getInstance().getSystemIconURL( "enabledSection" ))
         if minfo.getRoomBookingModuleActive():
-            vars["iconURL"] = iconEnabled
+            vars["checked"] = 'checked="true"'
             vars["activationText"] = _("Click to DEACTIVATE Room Booking Module")
         else:
-            vars["iconURL"] = iconDisabled
+            vars["checked"] = ''
             vars["activationText"] = _("Click to ACTIVATE Room Booking Module")
+
         rbPlugins = PluginLoader.getPluginsByType("RoomBooking")
         vars["plugins"] = rbPlugins
         vars["zodbHost"] = self._rh._host

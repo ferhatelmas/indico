@@ -38,25 +38,19 @@
         </td>
     </tr>
     <tr>
-        <td style="vertical-align:middle;white-space: nowrap;">
-            <img src="${Config.getInstance().getSystemIconURL( 'enabledSection' )}" alt="${ _("Click to disable")}"> <small> ${ _("Enabled plugin type")}</small>
-            <br />
-            <img src="${Config.getInstance().getSystemIconURL( 'disabledSection' )}" alt="${ _("Click to enable")}"> <small> ${ _("Disabled plugin type")}</small>
-        </td>
         <td bgcolor="white" width="100%" class="blacktext" style="padding-left:20px;vertical-align: top">
             <table align="left">
-                % for pluginType in PluginsHolder.getPluginTypes(includeNonVisible = False):
+                % for pluginType in PluginsHolder.getPluginTypes(includeNonVisible=False):
                 <tr>
                     <td>
-                        <a href="${urlHandlers.UHAdminTogglePluginType.getURL(pluginType)}" data-confirm='${"This will reload all the plugins too. Do you want to continue?"}' data-title='${"Toggle Plugin Type"}'>
+                        <input type="checkbox" onclick="jQuery(this).next().click(); return false;"
+
                         % if not pluginType.isUsable():
-                            <img class="imglink" alt="${ _("Not in usable state")}" src="${Config.getInstance().getSystemIconURL( 'greyedOutSection' )}"/>
+                            disabled="true"
                         % elif pluginType.isActive():
-                                <img class="imglink" alt="${ _("Click to disable")}" src="${Config.getInstance().getSystemIconURL( 'enabledSection' )}"/>
-                        % else:
-                                <img class="imglink" alt="${ _("Click to enable")}" src="${Config.getInstance().getSystemIconURL( 'disabledSection' )}"/>
+                            checked="true"
                         % endif
-                        </a>
+                        />
                         % if not pluginType.isUsable():
                             ${ pluginType.getName() }
                             <small class="smallRed">

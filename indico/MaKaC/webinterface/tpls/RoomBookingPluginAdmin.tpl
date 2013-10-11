@@ -17,8 +17,8 @@
             <tr>
               <td nowrap class="titleCellTD"><span class="titleCellFormat">${ _("Status")}: </span></td>
               <td>
-                <img src="${ iconURL }" style="padding-left: 12px; padding-right: 12px;"/>
-                <a href="${urlHandlers.UHRoomBookingModuleActive.getURL()}" rel="no-follow">${ activationText }</a>
+                <input type="checkbox" onclick="window.location='${ urlHandlers.UHRoomBookingModuleActive.getURL() }';
+                 return false;" ${ checked } /> ${ activationText }
               </td>
             </tr>
             </table>

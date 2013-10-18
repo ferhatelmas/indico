@@ -1,26 +1,30 @@
 <br/>
 <table>
   <tr>
-    <td class="dataCaptionTD"><span class="dataCaptionFormat"> ${ _("Current status")}</span></td>
+    <td class="dataCaptionTD"><span class="dataCaptionFormat"> ${ _("Current status") }</span></td>
     <td class="blacktext" colspan="2">
       <form action="${ setStatusURL }" method="POST">
     <div>
-      <input name="changeTo" type="hidden" value="${ changeTo }" />
+      <input name="changeTo" type="hidden" value="${ not activated }">
       <b>${ status }</b>
-      <small><input type="submit" class="btn" value="${ changeStatus }" /></small>
+      <small><input type="submit" class="btn" value="${ changeStatus }"></small>
     </div>
       </form>
     </td>
   </tr>
   <tr>
-    <td class="dataCaptionTD"><span class="dataCaptionFormat"> ${ _("Registration start date")}</span></td>
+    <td class="dataCaptionTD"><span class="dataCaptionFormat"> ${ _("Registration start date") }</span></td>
     <td class="blacktext">
       ${ startDate }
     </td>
     <td rowspan="8" style="align: right; vertical-align: bottom;">
       <form action="${ dataModificationURL }" method="POST">
     <div>
-      <input type="submit" class="btn" value="${ _("modify")}" ${ disabled } />
+        <input type="submit" class="btn" value="${ _("modify")}"
+        % if not activated:
+            disabled="true"
+        % endif
+        >
     </div>
       </form>
     </td>
@@ -135,7 +139,11 @@
                                     <tr>
                                         <td>
                                             % if section['toggleUrl']:
-                                                <input type="checkbox" ${ section['isEnabled'] } class="toggle-checkbox" data-url="${ section['toggleUrl'] }">
+                                                <input type="checkbox"
+                                                % if section['isEnabled']:
+                                                    checked
+                                                % endif
+                                                class="toggle-checkbox" data-url="${ section['toggleUrl'] }">
                                             % endif
                                         </td>
                                         <td>

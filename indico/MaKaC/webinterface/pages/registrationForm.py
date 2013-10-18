@@ -38,22 +38,21 @@ from MaKaC.i18n import _
 from indico.util.i18n import i18nformat
 from MaKaC.registration import RadioGroupInput, TextareaInput
 
-####
+
 # ----------------- MANAGEMENT AREA ---------------------------
-class WPConfModifRegFormBase( conferences.WPConferenceModifBase ):
+class WPConfModifRegFormBase(conferences.WPConferenceModifBase):
 
     def _createTabCtrl(self):
         self._tabCtrl = wcomponents.TabControl()
 
-        self._tabRegFormSetup = self._tabCtrl.newTab( "regformsetup", _("Setup"), \
-                urlHandlers.UHConfModifRegForm.getURL( self._conf ) )
-        self._tabRegistrants = self._tabCtrl.newTab( "registrants", _("Registrants"), \
-                urlHandlers.UHConfModifRegistrantList.getURL( self._conf ) )
-        self._tabRegistrationPreview = self._tabCtrl.newTab( "preview", _("Preview"), \
-                urlHandlers.UHConfModifRegistrationPreview.getURL( self._conf ) )
-        self._tabEPay = self._tabCtrl.newTab( "epay", _("e-payment"), \
-                urlHandlers.UHConfModifEPayment.getURL( self._conf ) )
-
+        self._tabRegFormSetup = self._tabCtrl.newTab("regformsetup", _("Setup"),
+                                                     urlHandlers.UHConfModifRegForm.getURL(self._conf))
+        self._tabRegistrants = self._tabCtrl.newTab("registrants", _("Registrants"),
+                                                    urlHandlers.UHConfModifRegistrantList.getURL(self._conf))
+        self._tabRegistrationPreview = self._tabCtrl.newTab("preview", _("Preview"),
+                                                            urlHandlers.UHConfModifRegistrationPreview.getURL(self._conf))
+        self._tabEPay = self._tabCtrl.newTab("epay", _("e-payment"),
+                                             urlHandlers.UHConfModifEPayment.getURL(self._conf))
         self._setActiveTab()
 
         if not self._conf.hasEnabledSection("regForm"):
@@ -64,7 +63,7 @@ class WPConfModifRegFormBase( conferences.WPConferenceModifBase ):
 
     def _getPageContent(self, params):
         self._createTabCtrl()
-        return wcomponents.WTabControl( self._tabCtrl, self._getAW() ).getHTML( self._getTabContent( params ) )
+        return wcomponents.WTabControl(self._tabCtrl, self._getAW()).getHTML(self._getTabContent(params))
 
     def _getTabContent(self, params):
         return "nothing"
@@ -75,25 +74,28 @@ class WPConfModifRegFormBase( conferences.WPConferenceModifBase ):
     def _setActiveTab(self):
         pass
 
-class WPConfModifRegFormPreview( WPConfModifRegFormBase ):
-    def _setActiveTab( self ):
+
+class WPConfModifRegFormPreview(WPConfModifRegFormBase):
+    def _setActiveTab(self):
         self._tabRegistrationPreview.setActive()
 
-    def _getTabContent( self, params ):
+    def _getTabContent(self, params):
         wc = WConfRegistrationFormPreview(self._conf, self._rh._getUser())
         return wc.getHTML()
 
-class WPConfModifRegForm( WPConfModifRegFormBase ):
-    def _setActiveTab( self ):
+
+class WPConfModifRegForm(WPConfModifRegFormBase):
+    def _setActiveTab(self):
         self._tabRegFormSetup.setActive()
 
-    def _getTabContent( self, params ):
+    def _getTabContent(self, params):
         wc = WConfModifRegForm(self._conf)
         return wc.getHTML()
 
-class WConfModifRegForm( wcomponents.WTemplated ):
 
-    def __init__( self, conference ):
+class WConfModifRegForm(wcomponents.WTemplated):
+
+    def __init__(self, conference):
         self._conf = conference
 
     def _getURL(self, sect):
@@ -112,25 +114,27 @@ class WConfModifRegForm( wcomponents.WTemplated ):
     def _getSectionsVars(self):
         sections = []
         regForm = self._conf.getRegistrationForm()
+        forms = regForm.getSortedForms()
+        formsCnt = len(forms) + 1
 
-        for gs in regForm.getSortedForms():
+        for gs in forms:
             section = {}
 
             section['toggleUrl'] = ''
             if not isinstance(gs, registration.GeneralSectionForm) or not gs.isRequired():
                 urlStatus = urlHandlers.UHConfModifRegFormEnableSection.getURL(self._conf)
                 urlStatus.addParam("section", gs.getId())
-                section['toggleUrl'] = str(urlStatus)
+                section['toggleUrl'] = urlStatus
 
-            section['isEnabled'] = 'checked' if gs.isEnabled() else ''
+            section['isEnabled'] = gs.isEnabled()
 
             section['checkbox'] = False
             if isinstance(gs, registration.GeneralSectionForm) and not gs.isRequired():
                 section['checkbox'] = True
                 section['sectionId'] = gs.getId()
 
-            section['sectionIndex'] = regForm.getSortedForms().index(gs)
-            section['sectionsCnt'] = len(regForm.getSortedForms()) + 1
+            section['sectionIndex'] = forms.index(gs)
+            section['sectionsCnt'] = formsCnt
 
             section['modifUrl'] = self._getURL(gs)
             section['sectionTitle'] = gs.getTitle()
@@ -146,7 +150,8 @@ class WConfModifRegForm( wcomponents.WTemplated ):
             urlStatus.addParam("statusId", st.getId())
             status["url"] = urlStatus
             status["id"] = st.getId()
-            status["caption"] = st.getCaption().strip() or ('-- [%s]  _("status with no name") --' % st.getId())
+            status["caption"] = st.getCaption().strip() or ('-- [{}]  {} --'.format(st.getId(),
+                                                                                    _("status with no name")))
             stls.append(status)
         return stls
 
@@ -157,9 +162,8 @@ class WConfModifRegForm( wcomponents.WTemplated ):
         vars["dataModificationURL"] = urlHandlers.UHConfModifRegFormDataModification.getURL(self._conf)
         if regForm.isActivated():
             vars["activated"] = True
-            vars["changeTo"] = "False"
-            vars["status"] =  _("ENABLED")
-            vars["changeStatus"] =  _("DISABLE")
+            vars["status"] = _("ENABLED")
+            vars["changeStatus"] = _("DISABLE")
             d = ""
             if regForm.getStartRegistrationDate() is not None:
                 d = regForm.getStartRegistrationDate().strftime("%A %d %B %Y")
@@ -175,40 +179,34 @@ class WConfModifRegForm( wcomponents.WTemplated ):
                 d = regForm.getModificationEndDate().strftime("%A %d %B %Y")
             vars["modificationEndDate"] = d
             vars["announcement"] = regForm.getAnnouncement()
-            vars["disabled"] = ""
             vars["contactInfo"] = regForm.getContactInfo()
-            vars["usersLimit"] = i18nformat("""--_("No limit")--""")
-            if regForm.getUsersLimit() > 0:
-                vars["usersLimit"] = regForm.getUsersLimit()
+
+            vars["usersLimit"] = regForm.getUsersLimit()
+            if vars["usersLimit"] == 0:
+                vars["usersLimit"] = "--{}--".format(_("No limit"))
+
             vars["title"] = regForm.getTitle()
             vars["notification"] = True
-            vars["notificationToList"] = ", ".join(regForm.getNotification().getToList()) or '--_("no TO list")--'
-            vars["notificationCcList"] = ", ".join(regForm.getNotification().getCCList()) or '--_("no CC list")--'
-            vars["mandatoryAccount"] =  _("Yes")
-            if not regForm.isMandatoryAccount():
-                vars["mandatoryAccount"] =  _("No")
+            vars["notificationToList"] = (", ".join(regForm.getNotification().getToList()) or
+                                          '--{}--'.format(_("no TO list")))
+            vars["notificationCcList"] = (", ".join(regForm.getNotification().getCCList()) or
+                                          '--{}--'.format(_("no CC list")))
             vars["notificationSender"] = regForm.getNotificationSender()
-            vars["sendRegEmail"] = _("Yes")
-            if not regForm.isSendRegEmail():
-                vars["sendRegEmail"] = _("No")
-            vars["sendReceiptEmail"] = _("Yes")
-            if not regForm.isSendReceiptEmail():
-                vars["sendReceiptEmail"] = _("No")
-            vars["sendPaidEmail"] = _("Yes")
-            if not regForm.isSendPaidEmail():
-                vars["sendPaidEmail"] = _("No")
+            yesNo = (_("No"), _("Yes"))
+            vars["mandatoryAccount"] = yesNo[regForm.isMandatoryAccount()]
+            vars["sendRegEmail"] = yesNo[regForm.isSendRegEmail()]
+            vars["sendReceiptEmail"] = yesNo[regForm.isSendReceiptEmail()]
+            vars["sendPaidEmail"] = yesNo[regForm.isSendPaidEmail()]
         else:
             vars["activated"] = False
-            vars["changeTo"] = "True"
-            vars["status"] =_("DISABLED")
+            vars["status"] = _("DISABLED")
             vars["changeStatus"] = _("ENABLE")
             vars["startDate"] = ""
             vars["endDate"] = ""
             vars["extraTimeAmount"] = ""
             vars["extraTimeUnit"] = ""
-            vars["modificationEndDate"]=""
+            vars["modificationEndDate"] = ""
             vars["announcement"] = ""
-            vars["disabled"] = 'disabled = "disabled"'
             vars["contactInfo"] = ""
             vars["usersLimit"] = ""
             vars["title"] = ""
@@ -224,147 +222,128 @@ class WConfModifRegForm( wcomponents.WTemplated ):
         vars["actionStatusesURL"] = urlHandlers.UHConfModifRegFormActionStatuses.getURL(self._conf)
         return vars
 
-class WPConfModifRegFormDataModification( WPConfModifRegFormBase ):
 
-    def _getTabContent( self, params ):
+class WPConfModifRegFormDataModification(WPConfModifRegFormBase):
+
+    def _getTabContent(self, params):
         wc = WConfModifRegFormDataModification(self._conf)
         return wc.getHTML()
 
-class WConfModifRegFormDataModification( wcomponents.WTemplated ):
 
-    def __init__( self, conference ):
+class WConfModifRegFormDataModification(wcomponents.WTemplated):
+
+    def __init__(self, conference):
         self._conf = conference
 
-    def getVars( self ):
+    def getVars(self):
         vars = wcomponents.WTemplated.getVars(self)
         regForm = self._conf.getRegistrationForm()
         vars["postURL"] = urlHandlers.UHConfModifRegFormPerformDataModification.getURL(self._conf)
-        vars["sDay"] = ""
-        vars["sMonth"] = ""
-        vars["sYear"] = ""
+        vars["sDay"], vars["sMonth"], vars["sYear"] = ("", "", "")
         if regForm.getStartRegistrationDate() is not None:
             d = regForm.getStartRegistrationDate()
-            vars["sDay"] = d.day
-            vars["sMonth"] = d.month
-            vars["sYear"] = d.year
-        vars["eDay"] = ""
-        vars["eMonth"] = ""
-        vars["eYear"] = ""
+            vars["sDay"], vars["sMonth"], vars["sYear"] = (d.day, d.month, d.year)
+        vars["eDay"], vars["eMonth"], vars["eYear"] = ("", "", "")
         if regForm.getEndRegistrationDate() is not None:
             d = regForm.getEndRegistrationDate()
-            vars["eDay"] = d.day
-            vars["eMonth"] = d.month
-            vars["eYear"] = d.year
-        vars["meDay"] = ""
-        vars["meMonth"] = ""
-        vars["meYear"] = ""
+            vars["eDay"], vars["eMonth"], vars["eYear"] = (d.day, d.month, d.year)
+        vars["meDay"], vars["meMonth"], vars["meYear"] = ("", "", "")
         if regForm.getModificationEndDate() is not None:
             d = regForm.getModificationEndDate()
-            vars["meDay"] = d.day
-            vars["meMonth"] = d.month
-            vars["meYear"] = d.year
+            vars["meDay"], vars["meMonth"], vars["meYear"] = (d.day, d.month, d.year)
         vars["announcement"] = regForm.getAnnouncement()
         vars["contactInfo"] = regForm.getContactInfo()
         vars["usersLimit"] = regForm.getUsersLimit()
         vars["title"] = regForm.getTitle()
+        vars["notificationSender"] = regForm.getNotificationSender()
         vars["toList"] = ", ".join(regForm.getNotification().getToList())
         vars["ccList"] = ", ".join(regForm.getNotification().getCCList())
-        vars["mandatoryAccount"] = ""
-        if regForm.isMandatoryAccount():
-            vars["mandatoryAccount"] = "CHECKED"
-        vars["notificationSender"] = regForm.getNotificationSender()
-        vars["sendRegEmail"] = ""
-        vars["sendReceiptEmail"] = ""
-        vars["sendPaidEmail"] = ""
-        if regForm.isSendRegEmail():
-            vars["sendRegEmail"] = "CHECKED"
-        if regForm.isSendReceiptEmail():
-            vars["sendReceiptEmail"] = "CHECKED"
-        if regForm.isSendPaidEmail():
-            vars["sendPaidEmail"] = "CHECKED"
+        yesNo = ("", _("CHECKED"))
+        vars["mandatoryAccount"] = yesNo[regForm.isMandatoryAccount()]
+        vars["sendRegEmail"] = yesNo[regForm.isSendRegEmail()]
+        vars["sendReceiptEmail"] = yesNo[regForm.isSendReceiptEmail()]
+        vars["sendPaidEmail"] = yesNo[regForm.isSendPaidEmail()]
         vars["extraTimeAmount"] = regForm.getEndExtraTimeAmount()
         vars["extraTimeUnit"] = regForm.getEndExtraTimeUnit()
         return vars
+
 
 class WPConfModifRegFormSectionsBase(WPConfModifRegFormBase):
 
     def _setActiveSideMenuItem(self):
         self._regFormMenuItem.setActive(True)
 
-    def _getPageContent( self, params ):
+    def _getPageContent(self, params):
         self._createTabCtrl()
         banner = wcomponents.WRegFormSectionBannerModif(self._targetSection, self._conf).getHTML()
-        html = wcomponents.WTabControl( self._tabCtrl, self._getAW() ).getHTML( self._getTabContent( params ) )
-        return banner+html
+        html = wcomponents.WTabControl(self._tabCtrl, self._getAW()).getHTML(self._getTabContent(params))
+        return banner + html
+
 
 class WPConfModifRegFormSessionsBase(WPConfModifRegFormSectionsBase):
 
-    def __init__( self, rh, conference ):
+    def __init__(self, rh, conference):
         WPConfModifRegFormSectionsBase.__init__(self, rh, conference)
         self._targetSection = self._conf.getRegistrationForm().getSessionsForm()
 
-    def _createTabCtrl( self ):
+    def _createTabCtrl(self):
         self._tabCtrl = wcomponents.TabControl()
-        self._tabMain = self._tabCtrl.newTab( "main",  _("Main"), \
-                urlHandlers.UHConfModifRegFormSessions.getURL( self._conf ) )
+        self._tabMain = self._tabCtrl.newTab("main",  _("Main"),
+                                             urlHandlers.UHConfModifRegFormSessions.getURL(self._conf ))
         self._setActiveTab()
 
-    def _setActiveTab( self ):
+    def _setActiveTab(self):
         pass
 
-    def _getTabContent( self, params ):
+    def _getTabContent(self, params):
         return "nothing"
 
 
-class WPConfModifRegFormSessions( WPConfModifRegFormSessionsBase ):
+class WPConfModifRegFormSessions(WPConfModifRegFormSessionsBase):
 
-    def _getTabContent( self, params ):
+    def _getTabContent(self, params):
         wc = WConfModifRegFormSessions(self._conf)
-        p = {'postURL': quoteattr(str(urlHandlers.UHConfModifRegFormSessionsRemove.getURL( self._conf ))),
-             'postAddURL': quoteattr(str(urlHandlers.UHConfModifRegFormSessionsAdd.getURL( self._conf ))),
-             'dataModificationURL': quoteattr(str(urlHandlers.UHConfModifRegFormSessionsDataModif.getURL( self._conf )))
+        p = {'postURL': urlHandlers.UHConfModifRegFormSessionsRemove.getURL(self._conf),
+             'postAddURL': urlHandlers.UHConfModifRegFormSessionsAdd.getURL(self._conf),
+             'dataModificationURL': urlHandlers.UHConfModifRegFormSessionsDataModif.getURL(self._conf)
             }
         return wc.getHTML(p)
 
-class WConfModifRegFormSessions( wcomponents.WTemplated ):
+
+class WConfModifRegFormSessions(wcomponents.WTemplated):
 
     def __init__( self, conference ):
         self._conf = conference
 
-    def _getSessionsHTML(self, sessions):
-        if sessions.getSessionList() == []:
-            html =  i18nformat("""--_("None selected")--""")
-        else:
-            html = []
-            for ses in sessions.getSessionList(True):
-                billable = ""
-                if ses.isBillable():
-                    billable = " <i>[billable: %s]</i>" % ses.getPrice()
-                cancelled = ""
-                if ses.isCancelled():
-                    cancelled = " <font color=\"red\">(cancelled)</font>"
-                url = urlHandlers.UHConfModifRegFormSessionItemModify.getURL(ses)
-                html.append("""
-                        <input type="checkbox" name="sessionIds" value="%s"><a href=%s>%s</a>%s%s
-                        """%(ses.getId(), quoteattr(str(url)), ses.getTitle(), billable, cancelled) )
-            html = "<br>".join(html)
-        return html
+    def _getSessionsVars(self, sessions):
+        sessionsVars = {}
+        sessionsVars["sessionList"] = []
+        sessionsVars["noSessionMessage"] = "--{}--".format(_("None selected"))
 
-    def _getSessionFormTypeHTML(self, sessions):
-        if sessions.getType()=="all":
-            return  _("multiple")
-        return  _("""2 choices <span style="color:red;">(session billing not possible)</span>""")
+        for ses in sessions.getSessionList(True):
+            se = {}
+            se["isBillable"] = ses.isBillable()
+            if se["isBillable"]:
+                se["price"] = ses.getPrice()
+            se["isCancelled"] = ses.isCancelled()
+            se["id"] = ses.getId()
+            se["url"] = urlHandlers.UHConfModifRegFormSessionItemModify.getURL(ses)
+            se["title"] = ses.getTitle()
+            sessionsVars["sessionList"].append(se)
+        return sessionsVars
 
     def getVars( self ):
         vars = wcomponents.WTemplated.getVars(self)
         regForm = self._conf.getRegistrationForm()
         sessions = regForm.getSessionsForm()
         vars["title"] = sessions.getTitle()
-        vars["description"] =  sessions.getDescription()
-        vars["type"] =  self._getSessionFormTypeHTML(sessions)
-        vars["sessions"] = self._getSessionsHTML(sessions)
+        vars["description"] = sessions.getDescription()
+        vars["sessionsType"] = sessions.getType()
+        vars["sessions"] = self._getSessionsVars(sessions)
         return vars
 
+
+# TODO: rest
 class WPConfModifRegFormSessionsDataModif( WPConfModifRegFormSessionsBase ):
 
     def _getTabContent( self, params ):

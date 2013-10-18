@@ -56,7 +56,17 @@
     </tr>
     <tr>
       <td nowrap class="dataCaptionTD"><span class="dataCaptionFormat">${ _("Features")}</span></td>
-      <td bgcolor="white" width="100%" valign="top" class="blacktext"><table><tr><td>${features}</td><td valign="top">${contextHelp('features' )}</td></tr></table></td>
+      <td bgcolor="white" width="100%" valign="top" class="blacktext">
+        <table>
+            <tr>
+                <td>
+                    <label class="toggle-checkbox toggle-checkbox-blacktext"><input type="checkbox" ${ newsPagesChecked } class="toggle-checkbox" data-url="${ newsPagesUrl }">${ _("News Pages")}</label>
+                    <label class="toggle-checkbox toggle-checkbox-blacktext"><input type="checkbox" ${ debugChecked } class="toggle-checkbox" data-url="${ debugUrl }">${ _("Debug")}</label>
+                </td>
+                <td valign="top">${ contextHelp('features')}</td>
+            </tr>
+        </table>
+      </td>
     </tr>
     </table>
   </td>

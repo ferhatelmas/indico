@@ -11,9 +11,13 @@
         <tr>
             <td nowrap class="dataCaptionTD"><span class="titleCellFormat">${ _("Text announcement")}</span></td>
             <td bgcolor="white" width="65%" class="blacktext">
-                <form action=${ tickertapeURL } method="POST" style="margin:0;">
-                    <input type="text" size="60" name="ttText" value=${ text }>
-                    <input type="submit" class="btn" name="savettText" value="${ _("save")}"> ${ modifiedText }<br>
+                <form action="${ tickertapeURL }" method="POST" style="margin:0;">
+                    <input type="text" size="60" name="ttText" value="${ text }">
+                    <input type="submit" class="btn" name="savettText" value="${ _("save")}">
+                    % if modifiedText:
+                        <font color="green">(${_("text saved")})</font>
+                    % endif
+                    <br>
 
                     <small> ${ _("""Note that text announcement must be enabled above to display this text""")}</small>
                 </form>
@@ -24,8 +28,12 @@
             <td nowrap class="dataCaptionTD"><span class="titleCellFormat"> ${ _("Status")}</span></td>
             <td bgcolor="white" width="65%" class="blacktext">
                 <form action=${ simpleTextURL } method="POST">
-                    <b>${ status }</b>
-                    <input type="submit"  id="toggleSimpleTextButton" class="btn" value="${ statusBtn }">
+                    % if isSimpleTextEnabled:
+                        <span style="color: #286135;"><b>${ _("ENABLED") }</b></span>
+                    % else:
+                        <span style="color: #612828;"><b>${ _("DISABLED") }</b></span>
+                    % endif
+                    <input type="submit"  id="toggleSimpleTextButton" class="btn" value="${ (_('Enable'), _('Disable'))[isSimpleTextEnabled] }">
                 </form>
             </td>
         </tr>
@@ -37,34 +45,30 @@
         </tr>
 
         <tr>
-            <td nowrap class="dataCaptionTD"><span class="titleCellFormat"> ${ _("Show in header")}</span>
-              <br>
-              <br>
-              <img src=${ enablePic } alt="${ _("Click to disable")}"> <small> ${ _("Enabled announ.")}</small>
-              <br>
-              <img src=${ disablePic } alt="${ _("Click to enable")}"> <small> ${ _("Disabled announ.")}</small>
+            <td nowrap class="dataCaptionTD">
+                <span class="titleCellFormat"> ${ _("Show in header")}</span>
             </td>
             <td bgcolor="white" width="65%" class="blacktext">
               <table align="left">
                 <tr>
                     <td>
-                        <form action=${ nowHappeningURL } method="POST" id="nowHappForm">
-                            <a href="#" onclick="$E('nowHappForm').dom.submit();return false;"><img src=${ nowHappeningIcon } alt="${ nowHappeningTextIcon }" class="imglink">&nbsp; ${ _("Now happening...")}</a>
+                        <form action="${ nowHappeningURL }" method="POST">
+                            <label class='toggle-checkbox toggle-checkbox-blacktext'><input type="checkbox" ${ nowHappeningEnabled } class='toggle-checkbox'>${ _("Now happening...")}</label>
                         </form>
                     </td>
                 </tr>
                 <tr>
                     <td>
-                        <form action=${ searchBoxURL } method="POST" id="dispSearchBoxForm">
-                            <a href="#" onclick="$E('dispSearchBoxForm').dom.submit();return false;"><img src=${ searchBoxIcon } alt="${ searchBoxTextIcon }" class="imglink">&nbsp; ${ _("Display search box")}</a>
+                        <form action="${ searchBoxURL }" method="POST">
+                            <label class='toggle-checkbox toggle-checkbox-blacktext'><input type="checkbox" ${ searchBoxEnabled } class='toggle-checkbox'>${ _("Display search box") }</label>
                         </form>
                     </td>
                 </tr>
-                % if confType == "conference" :
+                % if confType == "conference":
                 <tr>
                     <td>
-                        <form action=${ navigationBoxURL } method="POST" id="navBoxForm">
-                            <a href="#" onclick="$E('navBoxForm').dom.submit();return false;"><img src=${ navigationBoxIcon } alt="${ navigationBoxTextIcon }" class="imglink">&nbsp; ${ _("Display navigation bar")}</a>
+                        <form action="${ navigationBoxURL }" method="POST">
+                            <label class='toggle-checkbox toggle-checkbox-blacktext'><input type="checkbox" ${ navigationBoxEnabled } class='toggle-checkbox'>${ _("Display navigation bar") }</label>
                         </form>
                     </td>
                 </tr>
@@ -74,3 +78,12 @@
         </tr>
     </table>
 </div>
+
+<script type="text/javascript">
+    $(function() {
+        $('input[type="checkbox"]').click(function(evt) {
+            evt.preventDefault();
+            $(this).closest('form').submit();
+        });
+    });
+</script>

@@ -102,4 +102,15 @@ $(document).ready(function() {
     });
 
     $('input, textarea').placeholder();
+
+    $('input.toggle-checkbox').click(function(evt) {
+        evt.preventDefault();
+        var url = $(this).data('url');
+        if(url) {
+            window.location = url;
+        } else {
+            // there is a confirmation script
+            $(this).next().click()
+        }
+    });
 });

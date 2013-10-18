@@ -173,36 +173,23 @@ class WAdmins(wcomponents.WTemplated):
         vars['publicSupportEmail'] = Config.getInstance().getPublicSupportEmail()
         vars['noReplyEmail'] = Config.getInstance().getNoReplyEmail()
         vars["lang"] = minfo.getLang()
-        vars["address"] = ""
-        if minfo.getCity() != "":
-            vars["address"] = minfo.getCity()
-        if minfo.getCountry() != "":
-            if vars["address"] != "":
-                vars["address"] = "%s (%s)"%(vars["address"], minfo.getCountry())
-            else:
-                vars["address"] = "%s"%minfo.getCountry()
+
+        vars["address"] = minfo.getCity()
+        if vars["address"] == "":
+            vars["address"] = "%s"%minfo.getCountry()
+        else:
+            vars["address"] = "%s (%s)"%(vars["address"], minfo.getCountry())
+
         try:
             vars["timezone"] = minfo.getTimezone()
         except:
             vars["timezone"] = 'UTC'
-        vars["systemIconAdmins"] = Config.getInstance().getSystemIconURL( "admin" )
-        iconDisabled = str(Config.getInstance().getSystemIconURL( "disabledSection" ))
-        iconEnabled = str(Config.getInstance().getSystemIconURL( "enabledSection" ))
-        vars["features"] = ""
-        url = urlHandlers.UHAdminSwitchNewsActive.getURL()
-        if minfo.isNewsActive():
-            icon = iconEnabled
-        else:
-            icon = iconDisabled
-        #vars["features"] += i18nformat("""<br><a href="%s"><img src="%s" border="0" alt="Toggle on/off"> _("News Pages") </a>""") % (str(url), icon)
-        #vars["announcement"] = WAnnouncementModif().getHTML( vars )
-        vars["features"] += i18nformat("""<div style="margin-bottom: 5px"><a href="%s"><img src="%s" border="0" style="float:left; padding-right: 5px">_("News Pages")</a></div>""") % (str(url), icon)
-        url = urlHandlers.UHAdminSwitchDebugActive.getURL()
-        if minfo.isDebugActive():
-            icon = iconEnabled
-        else:
-            icon = iconDisabled
-        vars["features"] += i18nformat("""<div style="margin-bottom: 5px"><a href="%s"><img src="%s" border="0" style="float:left; padding-right: 5px">_("Debug")</a></div>""") % (str(url), icon)
+
+        vars["newsPagesChecked"] = 'checked' if minfo.isNewsActive() else ''
+        vars["newsPagesUrl"] = urlHandlers.UHAdminSwitchNewsActive.getURL()
+        vars["debugChecked"] = 'checked' if minfo.isDebugActive() else ''
+        vars["debugUrl"] = urlHandlers.UHAdminSwitchDebugActive.getURL()
+
         vars["administrators"] = fossilize(minfo.getAdminList())
         return vars
 
@@ -368,7 +355,7 @@ class WPAdminPlugins( WPAdminsBase ):
         for pluginType in pluginTypes:
             if pluginType.isVisible() and pluginType.isActive():
                 self._tabs[pluginType.getId()] = self._tabCtrl.newTab(pluginType.getName(), pluginType.getName(),
-                                                                       urlHandlers.UHAdminPlugins.getURL( pluginType ))
+                                                                      urlHandlers.UHAdminPlugins.getURL(pluginType))
 
     def _setActiveSideMenuItem(self):
         self._pluginsMenuItem.setActive()
@@ -1053,29 +1040,15 @@ class WUserManagement(wcomponents.WTemplated):
     def getVars(self):
         vars = wcomponents.WTemplated.getVars(self)
         minfo = info.HelperMaKaCInfo.getMaKaCInfoInstance()
-        tpl = """<input type="checkbox" onclick="window.location='{url}';
-                 return false;" {checked} /> _("{action}")"""
-        checked_tpl = ('', 'checked="true"')
-        vars["accountCreationData"] = ""
 
-        url = urlHandlers.UHUserManagementSwitchAuthorisedAccountCreation.getURL()
-        vars["accountCreationData"] += i18nformat(tpl.format(url=url,
-            checked=checked_tpl[minfo.getAuthorisedAccountCreation()],
-            action="Public Account Creation"))
+        vars["publicAccountCreationChecked"] = 'checked' if minfo.getAuthorisedAccountCreation() else ''
+        vars["publicAccountCreationUrl"] = urlHandlers.UHUserManagementSwitchAuthorisedAccountCreation.getURL()
 
-        vars["accountCreationData"] += '<br/>'
+        vars["notifyAccountCreationChecked"] = 'checked' if minfo.getNotifyAccountCreation() else ''
+        vars["notifyAccountCreationUrl"] = urlHandlers.UHUserManagementSwitchNotifyAccountCreation.getURL()
 
-        url = urlHandlers.UHUserManagementSwitchNotifyAccountCreation.getURL()
-        vars["accountCreationData"] += i18nformat(tpl.format(url=url,
-            checked=checked_tpl[minfo.getNotifyAccountCreation()],
-            action="Notify Account Creation by Email"))
-
-        vars["accountCreationData"] += '<br/>'
-
-        url = urlHandlers.UHUserManagementSwitchModerateAccountCreation.getURL()
-        vars["accountCreationData"] += i18nformat(tpl.format(url=url,
-            checked=checked_tpl[minfo.getModerateAccountCreation()],
-            action="Moderate Account Creation"))
+        vars["moderateAccountCreationChecked"] = 'checked' if minfo.getModerateAccountCreation() else ''
+        vars["moderateAccountCreationUrl"] = urlHandlers.UHUserManagementSwitchModerateAccountCreation.getURL()
 
         return vars
 
@@ -2258,11 +2231,12 @@ class WRoomBookingPluginAdmin( wcomponents.WTemplated ):
         minfo = info.HelperMaKaCInfo.getMaKaCInfoInstance()
 
         if minfo.getRoomBookingModuleActive():
-            vars["checked"] = 'checked="true"'
-            vars["activationText"] = _("Click to DEACTIVATE Room Booking Module")
+            vars["activated"] = 'checked'
+            vars["toggleText"] = _("Click to DEACTIVATE Room Booking Module")
         else:
-            vars["checked"] = ''
-            vars["activationText"] = _("Click to ACTIVATE Room Booking Module")
+            vars["activated"] = ''
+            vars["toggleText"] = _("Click to ACTIVATE Room Booking Module")
+        vars["toggleUrl"] = urlHandlers.UHRoomBookingModuleActive.getURL()
 
         rbPlugins = PluginLoader.getPluginsByType("RoomBooking")
         vars["plugins"] = rbPlugins

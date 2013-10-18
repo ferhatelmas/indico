@@ -37,20 +37,14 @@
     </tr>
     <tr>
         <td class="dataCaptionTD">
-            <span class="dataCaptionFormat" style="white-space: nowrap;"> ${ _("Miscellaneous options")}</span><br/><br/>
-            <img src="${Config.getInstance().getSystemIconURL( 'enabledSection' )}" alt="${ _("Click to disable")}"> <small> ${ _("Enabled option")}</small>
-            <br />
-            <img src="${Config.getInstance().getSystemIconURL( 'disabledSection' )}" alt="${ _("Click to enable")}"> <small> ${ _("Disabled option")}</small>
-            <br />
+            <span class="dataCaptionFormat" style="white-space: nowrap;"> ${ _("Miscellaneous options")}</span>
         </td>
         <td bgcolor="white" width="100%" class="blacktext">
+            <label class="toggle-checkbox"><input type="checkbox"
             % if boaConfig.getShowIds():
-                <% icon = str(Config.getInstance().getSystemIconURL( "enabledSection" )) %>
-            % else:
-                <% icon = str(Config.getInstance().getSystemIconURL( "disabledSection" )) %>
+                checked
             % endif
-            <a href="${urlToogleShowIds}"><img src="${icon}"> ${_("Show Abstract IDs")}</a> ${_("(Table of Contents)")}
-            <br/>
+            class="toggle-checkbox" data-url="${ urlToogleShowIds }">${ _("Show Abstract IDs") } (${ _("Table of Contents") })</label>
         </td>
     </tr>
 </table>

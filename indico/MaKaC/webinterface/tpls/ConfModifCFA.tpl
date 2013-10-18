@@ -45,7 +45,18 @@
         <td bgcolor="white" width="100%">
           <table>
             <tr>
-              <td class="blacktext">${ notification }</td>
+              <td class="blacktext">
+                <table align="left">
+                    <tr>
+                        <td align="right"><b> ${ _("To List")}:</b></td>
+                        <td align="left">${ notificationToList }</td>
+                    </tr>
+                    <tr>
+                        <td align="right"><b> ${_("Cc List")}:</b></td>
+                        <td align="left">${ notificationCcList }</td>
+                    </tr>
+                </table>
+              </td>
             </tr>
             <tr>
               <td><font color="#777777"><small> ${ _("An email is automatically sent to the submitter after their abstract submission. This email will also be sent to the email addresses above this line.")}</small></font></td>
@@ -78,26 +89,32 @@
     <tr>
         <td class="dataCaptionTD"><span class="dataCaptionFormat"> ${ _("Misc. Options")}</span></td>
         <td bgcolor="white" width="100%" class="blacktext">
-            <a href="${ multipleUrl }"><img src="${ iconEnabled if multipleTracks else iconDisabled }" border="0"> ${ _("Allow multiple tracks selection") }</a>
-            <br/><a href="${ mandatoryUrl }"><img src="${ iconEnabled if areTracksMandatory else iconDisabled }" border="0"> ${ _("Make track selection mandatory") }</a>
-            <br/><a href="${ attachUrl }"><img src="${ iconEnabled if canAttachFiles else iconDisabled }" border="0"> ${ _("Allow to attach files") }</a>
-            <br/><a href="${ showSpeakerUrl }"><img src="${ iconEnabled if showSelectAsSpeaker else iconDisabled }" border="0"> ${ _("Allow to choose the presenter(s) of the abstracts") }</a>
-            <% makeMandSpk = _("Make mandatory the selection of at least one author as presenter") %>
-            % if showSelectAsSpeaker:
-                <br/><a href="${ speakerMandatoryUrl }"><img src="${ iconEnabled if isSelectSpeakerMandatory else iconDisabled }" border="0"> ${makeMandSpk}</a>
-            % else:
-                <br/><img src="${ iconDisabled }" border="0"> <span id="makePresenterMandatory" style="color:#777"> ${makeMandSpk}</span>
+            <label class="toggle-checkbox"><input type="checkbox" ${ multipleTracks } class="toggle-checkbox" data-url="${ multipleUrl }">${ _("Allow multiple tracks selection") }</label>
+
+            <label class="toggle-checkbox"><input type="checkbox" ${ mandatoryTracks } class="toggle-checkbox" data-url="${ mandatoryUrl }">${ _("Make track selection mandatory") }</label>
+
+            <label class="toggle-checkbox"><input type="checkbox" ${ canAttachFiles } class="toggle-checkbox" data-url="${ attachUrl }">${ _("Allow to attach files") }</label>
+
+            <label class="toggle-checkbox"><input type="checkbox" ${ showSelectAsSpeaker } class="toggle-checkbox" data-url="${ showSpeakerUrl }">${ _("Allow to choose the presenter(s) of the abstracts") }</label>
+
+            <label class="toggle-checkbox"><input type="checkbox"
+            % if not showSelectAsSpeaker:
+                disabled="true" style="color: red;"
             % endif
-            <br/>
-            <a href="${ showAttachedFilesUrl }"
-               % if not showAttachedFilesContribList:
-                 data-confirm="${_("Please, note that if you enable this option the files (attached to the abstracts) will be public and accessible by everybody. Are you sure to continue?")}"
-                 data-title="${_("Show attached files")}"
-               % endif
-               >
-               <img src="${ iconEnabled if showAttachedFilesContribList else iconDisabled }" border="0" />
-               ${ _("Show files attached to abstracts in the contribution list")}
-            </a>
+            ${ isSelectSpeakerMandatory } class="toggle-checkbox" data-url="${ speakerMandatoryUrl }">${ _("Make mandatory the selection of at least one author as presenter") }</label>
+
+            <label class="toggle-checkbox"><input type="checkbox" ${ showAttachedFilesContribList }
+                % if showAttachedFilesContribList:
+                    data-url="${ showAttachedFilesUrl }"
+                % endif
+            class="toggle-checkbox">${ _("Show files attached to abstracts in the contribution list") }
+                <a href="${ showAttachedFilesUrl }"
+                   % if not showAttachedFilesContribList:
+                     data-confirm="${_("Please, note that if you enable this option the files (attached to the abstracts) will be public and accessible by everybody. Are you sure to continue?")}"
+                     data-title="${_("Show attached files")}"
+                   % endif
+                ></a>
+            </label>
         </td>
     </tr>
     </tr>
@@ -108,14 +125,34 @@
         <td class="dataCaptionTD">
           <a name="optional"></a>
           <span class="dataCaptionFormat"> ${ _("Abstract fields")}</span>
-          <br>
-          <br>
-          <img src=${ enablePic } alt="${ _("Click to disable")}"> <small> ${ _("Enabled field")}</small><br>
-          <img src=${ disablePic } alt="${ _("Click to enable")}"> <small> ${ _("Disabled field")}</small>
         </td>
         <td bgcolor="white" width="100%" class="blacktext" style="padding-left:20px" colspan="2">
             <table align="left" width="100%">
-                    ${ abstractFields }
+              <form action="" method="POST">
+                % for af in abstractFields:
+                  <tr>
+                    <td>
+                      <input type="checkbox" ${ af['isEnabled'] } class="toggle-checkbox" data-url="${ af['toggleUrl'] }">&nbsp;
+                      <a href="${ af['urlUp'] }"><img src="${ arrowUp }" border="0" alt="" style="vertical-align: middle"></a>
+                      <a href="${ af['urlDown'] }"><img src="${ arrowDown }" border="0" alt="" style="vertical-align: middle"></a>
+                    </td>
+                    <td width="1%">
+                      % if af['removeButton']:
+                        <input type="checkbox" name="fieldId" value="${ af['id'] }">
+                      % endif
+                    </td>
+                    <td>
+                      &nbsp;<a class="edit-field" href="#" data-id="${ af['id']}" data-fieldType="${ af['type']}">${ af['caption'] }</a> ${ af['addInfo'] }
+                    </td>
+                  </tr>
+                % endfor
+                <tr>
+                  <td align="right" colspan="3">
+                    <input type="submit" value="${ _('remove') }" onClick="this.form.action='${ abstractFieldsUrlRemove }';" class="btn">
+                    <input id="add-field-button" type="submit" value="${ _('add') }" class="btn">
+                  </td>
+                </tr>
+              </form>
             </table>
         </td>
     </tr>

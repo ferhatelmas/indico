@@ -1,4 +1,4 @@
-<% pluginList = PluginType.getPluginList(doSort = True, includeNonPresent = False, includeNonActive = True) %>
+<% pluginList = PluginType.getPluginList(doSort=True, includeNonPresent=False, includeNonActive=True) %>
 
 <table style="width: 100%">
     <tr>
@@ -8,53 +8,46 @@
     </tr>
     <tr>
         <td colspan="3">
-            <span>${ PluginType.getDescription() }</span>
+            <span>${ _(PluginType.getDescription()) }</span>
         </td>
     </tr>
     <tr>
         <td style="vertical-align:middle;white-space: nowrap;">
-            <img src="${Config.getInstance().getSystemIconURL( 'enabledSection' )}" alt="${ _("Click to disable")}"> <small> ${ _("Enabled plugin")}</small>
-            <br />
-            <img src="${Config.getInstance().getSystemIconURL( 'disabledSection' )}" alt="${ _("Click to enable")}"> <small> ${ _("Disabled plugin")}</small>
-            <br />
-            <br />
             <form method="post" action="${ urlHandlers.UHAdminReloadPlugins.getURL(PluginType) }">
                 <input type="submit" value="${ _("Reload")}"/>
             </form>
         </td>
+    </tr>
+    <tr>
         <td bgcolor="white" width="100%" class="blacktext" style="padding-left:20px;vertical-align: top">
             % if PluginType.hasPlugins() :
             <table align="left">
                 % for plugin in pluginList:
                 <tr>
                     <td>
+                        <label class="toggle-checkbox"><input type="checkbox"
                         % if not plugin.isUsable():
-                            <img class="imglink" alt="${ _("Not in usable state")}" src="${Config.getInstance().getSystemIconURL( 'greyedOutSection' )}"/>
+                            disabled="true"
                         % elif plugin.isActive():
-                            <a href="${urlHandlers.UHAdminTogglePlugin.getURL(plugin)}">
-                                <img class="imglink" alt="${ _("Click to disable")}" src="${Config.getInstance().getSystemIconURL( 'enabledSection' )}"/>
-
-                            </a>
-                        % else:
-                            <a href="${urlHandlers.UHAdminTogglePlugin.getURL(plugin)}">
-                                <img class="imglink" alt="${ _("Click to enable")}" src="${Config.getInstance().getSystemIconURL( 'disabledSection' )}"/>
-                            </a>
+                            checked
                         % endif
+                        class="toggle-checkbox" data-url="${ urlHandlers.UHAdminTogglePlugin.getURL(plugin) }">
                         % if not plugin.isUsable():
                             ${ plugin.getName() }
                             <small class="smallRed">
                                 (${ plugin.getNotUsableReason() })
                             </small>
                         % else:
-                        <a href="${urlHandlers.UHAdminTogglePlugin.getURL(plugin)}">
-                            ${ plugin.getName() }
-                        </a>
+                            <a href="${ urlHandlers.UHAdminTogglePlugin.getURL(plugin) }">
+                                ${ plugin.getName() }
+                            </a>
                         % endif
                         % if plugin.hasDescription():
                             <span style="margin-left: 2em;">
                                 (${ plugin.getDescription() })
                             </span>
                         % endif
+                        </label>
                     </td>
                 </tr>
                 % endfor

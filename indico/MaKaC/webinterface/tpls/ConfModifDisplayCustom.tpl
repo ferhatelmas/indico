@@ -129,8 +129,8 @@
 <script type="text/javascript">
 $(function() {
     var button = new RemoteSwitchButton(${conf.getDisplayMgr().getShowSocialApps()|n,j},
-                                        Html.img({src:'${systemIcon('enabledSection')}'}),
-                                        Html.img({src:'${systemIcon('disabledSection')}'}),
+                                        Html.input('checkbox', {checked: true}),
+                                        Html.input('checkbox'),
                                         'event.social.toggle', 'event.social.toggle',
                                         {conference: ${conf.getId()|n,j}});
     $E('social_bookmarks').set(button.draw());

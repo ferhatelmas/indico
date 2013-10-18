@@ -165,3 +165,18 @@ textarea {
     background-image: linear-gradient(bottom, #81ADEF, #A5C4F3);
     color: #555 !important;
 }
+
+label.toggle-checkbox {
+    display: block;
+    font-weight: normal;
+}
+
+label.toggle-checkbox-blacktext {
+    color: rgb(0, 0, 0);
+}
+
+input.toggle-checkbox {
+    margin-left: -3px;
+    vertical-align: middle;
+    position: relative;
+}

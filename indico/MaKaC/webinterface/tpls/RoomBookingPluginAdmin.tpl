@@ -17,8 +17,7 @@
             <tr>
               <td nowrap class="titleCellTD"><span class="titleCellFormat">${ _("Status")}: </span></td>
               <td>
-                <input type="checkbox" onclick="window.location='${ urlHandlers.UHRoomBookingModuleActive.getURL() }';
-                 return false;" ${ checked } /> ${ activationText }
+                <label class="toggle-checkbox"><input type="checkbox" ${ activated } class="toggle-checkbox" data-url="${ toggleUrl }">${ toggleText }</label>
               </td>
             </tr>
             </table>

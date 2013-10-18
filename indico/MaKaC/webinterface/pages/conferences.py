@@ -3023,21 +3023,34 @@ class WConfModifCFA(wcomponents.WTemplated):
         self._conf = conference
 
     def _getAbstractFieldsHTML(self, vars):
+        afls = []
         abMgr = self._conf.getAbstractMgr()
-        enabledText = _("Click to disable")
-        disabledText = _("Click to enable")
-        laf = []
-        urlRemove = str(urlHandlers.UHConfModifCFARemoveOptFld.getURL(self._conf))
-        laf.append("""<form action="" method="POST">""")
+
         for af in abMgr.getAbstractFieldsMgr().getFields():
+            afvars = {}
+
             urlUp = urlHandlers.UHConfModifCFAAbsFieldUp.getURL(self._conf)
             urlUp.addParam("fieldId", af.getId())
             urlDown = urlHandlers.UHConfModifCFAAbsFieldDown.getURL(self._conf)
             urlDown.addParam("fieldId", af.getId())
+            afvars['urlUp'] = urlUp
+            afvars['urlDown'] = urlDown
+
+            toggleUrl = urlHandlers.UHConfModifCFAOptFld.getURL(self._conf)
+            toggleUrl.addParam("fieldId", af.getId())
+            afvars['toggleUrl'] = "{}#optional".format(toggleUrl)
+            afvars['isEnabled'] = 'checked' if self._conf.getAbstractMgr().hasEnabledAbstractField(af.getId()) else ''
+
+            afvars['removeButton'] = af.getId() != 'content'
+            afvars['id'] = af.getId()
+            afvars['type'] = af.getType()
+            afvars['caption'] = af.getCaption()
+
             if af.isMandatory():
                 mandatoryText = _("mandatory")
             else:
                 mandatoryText = _("optional")
+
             maxCharText = ""
             if isinstance(af, AbstractTextField):
                 maxCharText = " - "
@@ -3045,67 +3058,24 @@ class WConfModifCFA(wcomponents.WTemplated):
                     maxCharText += _("max: %s %s.") % (af.getMaxLength(), af.getLimitation())
                 else:
                     maxCharText += _("not limited")
+
             addInfo = "(%s%s)" % (mandatoryText, maxCharText)
-            url = urlHandlers.UHConfModifCFAOptFld.getURL(self._conf)
-            url.addParam("fieldId", af.getId())
-            url = quoteattr("%s#optional" % str(url))
-            if self._conf.getAbstractMgr().hasEnabledAbstractField(af.getId()):
-                icon = vars["enablePic"]
-                textIcon = enabledText
-            else:
-                icon = vars["disablePic"]
-                textIcon = disabledText
-            if af.getId() == "content":
-                removeButton = ""
-            else:
-                removeButton = "<input type=\"checkbox\" name=\"fieldId\" value=\"%s\">" % af.getId()
-            laf.append("""
-                            <tr>
-                                <td>
-                                  <a href=%s><img src=%s alt="%s" class="imglink"></a>&nbsp;<a href=%s><img src=%s border="0" alt=""></a><a href=%s><img src=%s border="0" alt=""></a>
-                                </td>
-                                <td width="1%%">%s</td>
-                                <td>
-                                  &nbsp;<a class="edit-field" href="#" data-id=%s data-fieldType=%s>%s</a> %s
-                                </td>
-                            </tr>
-                            """ % (
-                                url,
-                                icon,
-                                textIcon,
-                                quoteattr(str(urlUp)),
-                                quoteattr(str(Config.getInstance().getSystemIconURL("upArrow"))),
-                                quoteattr(str(urlDown)),
-                                quoteattr(str(Config.getInstance().getSystemIconURL("downArrow"))),
-                                removeButton,
-                                af.getId(),
-                                af.getType(),
-                                af.getCaption(),
-                                addInfo))
-        laf.append(i18nformat("""
-    <tr>
-      <td align="right" colspan="3">
-        <input type="submit" value="_("remove")" onClick="this.form.action='%s';" class="btn">
-        <input id="add-field-button" type="submit" value="_("add")" class="btn">
-      </td>
-    </tr>
-    </form>""") % urlRemove)
-        laf.append("</form>")
-        return "".join(laf)
+            afvars['addInfo'] = addInfo
+
+            afls.append(afvars)
+
+        urlRemove = str(urlHandlers.UHConfModifCFARemoveOptFld.getURL(self._conf))
+        return (urlRemove, afls)
 
     def getVars(self):
         vars = wcomponents.WTemplated.getVars(self)
         abMgr = self._conf.getAbstractMgr()
-
-        vars["iconDisabled"] = str(Config.getInstance().getSystemIconURL("disabledSection"))
-        vars["iconEnabled"] = str(Config.getInstance().getSystemIconURL("enabledSection"))
-
-        vars["multipleTracks"] = abMgr.getMultipleTracks()
-        vars["areTracksMandatory"] = abMgr.areTracksMandatory()
-        vars["canAttachFiles"] = abMgr.canAttachFiles()
-        vars["showSelectAsSpeaker"] = abMgr.showSelectAsSpeaker()
-        vars["isSelectSpeakerMandatory"] = abMgr.isSelectSpeakerMandatory()
-        vars["showAttachedFilesContribList"] = abMgr.showAttachedFilesContribList()
+        vars["multipleTracks"] = 'checked' if abMgr.getMultipleTracks() else ''
+        vars["mandatoryTracks"] = 'checked' if abMgr.areTracksMandatory() else ''
+        vars["canAttachFiles"] = 'checked' if abMgr.canAttachFiles() else ''
+        vars["showSelectAsSpeaker"] = 'checked' if abMgr.showSelectAsSpeaker() else ''
+        vars["isSelectSpeakerMandatory"] = 'checked' if abMgr.isSelectSpeakerMandatory() else ''
+        vars["showAttachedFilesContribList"] = 'checked' if abMgr.showAttachedFilesContribList() else ''
 
         vars["multipleUrl"] = urlHandlers.UHConfCFASwitchMultipleTracks.getURL(self._conf)
         vars["mandatoryUrl"] = urlHandlers.UHConfCFAMakeTracksMandatory.getURL(self._conf)
@@ -3125,21 +3095,11 @@ class WConfModifCFA(wcomponents.WTemplated):
             vars["announcement"] = abMgr.getAnnouncement()
             vars["disabled"] = ""
             modifDL = abMgr.getModificationDeadline()
-            vars["modifDL"] = i18nformat("""--_("not specified")--""")
+            vars["modifDL"] = '--_("not specified")--'
             if modifDL:
                 vars["modifDL"] = format_date(modifDL, format='full')
-            vars["notification"] = i18nformat("""
-                        <table align="left">
-                            <tr>
-                                <td align="right"><b> _("To List"):</b></td>
-                                <td align="left">%s</td>
-                            </tr>
-                            <tr>
-                                <td align="right"><b> _("Cc List"):</b></td>
-                                <td align="left">%s</td>
-                            </tr>
-                        </table>
-                        """) % (", ".join(abMgr.getSubmissionNotification().getToList()) or i18nformat("""--_("no TO list")--"""), ", ".join(abMgr.getSubmissionNotification().getCCList()) or i18nformat("""--_("no CC list")--"""))
+            vars["notificationToList"] = ", ".join(abMgr.getSubmissionNotification().getToList()) or '--_("no TO list")--'
+            vars["notificationCcList"] = ", ".join(abMgr.getSubmissionNotification().getCCList()) or '--_("no CC list")--'
         else:
             vars["changeTo"] = "True"
             vars["status"] = _("DISABLED")
@@ -3152,10 +3112,11 @@ class WConfModifCFA(wcomponents.WTemplated):
             vars["disabled"] = "disabled"
             vars["modifDL"] = ""
             vars["submitters"] = ""
-            vars["notification"] = ""
-        vars["enablePic"] = quoteattr(str(Config.getInstance().getSystemIconURL("enabledSection")))
-        vars["disablePic"] = quoteattr(str(Config.getInstance().getSystemIconURL("disabledSection")))
-        vars["abstractFields"] = self._getAbstractFieldsHTML(vars)
+            vars["notificationToList"] = ""
+            vars["notificationCcList"] = ""
+        vars["abstractFieldsUrlRemove"], vars["abstractFields"] = self._getAbstractFieldsHTML(vars)
+        vars["arrowUp"] = Config.getInstance().getSystemIconURL("upArrow")
+        vars["arrowDown"] = Config.getInstance().getSystemIconURL("downArrow")
         vars["addNotifTplURL"] = urlHandlers.UHAbstractModNotifTplNew.getURL(self._conf)
         vars["remNotifTplURL"] = urlHandlers.UHAbstractModNotifTplRem.getURL(self._conf)
         vars["confId"] = self._conf.getId()
@@ -3804,65 +3765,33 @@ class WConfModifDisplayConfHeader(wcomponents.WTemplated):
     def getVars(self):
         vars = wcomponents.WTemplated.getVars(self)
 
-        #indico-style "checkboxes"
-        vars["enablePic"]=quoteattr(str(Config.getInstance().getSystemIconURL( "enabledSection" )))
-        vars["disablePic"]=quoteattr(str(Config.getInstance().getSystemIconURL( "disabledSection" )))
-        enabledText = _("Click to disable")
-        disabledText = _("Click to enable")
-
         # ------ Ticker Tape: ------
         # general
-        vars["tickertapeURL"]=quoteattr(str(urlHandlers.UHTickerTapeAction.getURL(self._conf)))
-        status= _("DISABLED")
-        btnLabel= _("Enable")
-        statusColor = "#612828"
-        if self._tickerTape.isSimpleTextEnabled():
-            statusColor = "#286135"
-            status= _("ENABLED")
-            btnLabel= _("Disable")
-        vars["status"]= """<span style="color: %s;">%s</span>""" %(statusColor,status)
-        vars["statusBtn"]=btnLabel
-        # annoucements
-        urlNP=urlHandlers.UHTickerTapeAction.getURL(self._conf)
-        urlNP.addParam("nowHappening", "action")
-        if self._tickerTape.isNowHappeningEnabled():
-            vars["nowHappeningIcon"]=vars["enablePic"]
-            vars["nowHappeningTextIcon"]=enabledText
-        else:
-            vars["nowHappeningIcon"]=vars["disablePic"]
-            vars["nowHappeningTextIcon"]=disabledText
-        vars["nowHappeningURL"]=quoteattr("%s#tickerTape"%str(urlNP))
+        vars["tickertapeURL"] = urlHandlers.UHTickerTapeAction.getURL(self._conf)
+        vars["isSimpleTextEnabled"] = self._tickerTape.isSimpleTextEnabled()
 
-        urlST=urlHandlers.UHTickerTapeAction.getURL(self._conf)
+        # annoucements
+        urlNP = urlHandlers.UHTickerTapeAction.getURL(self._conf)
+        urlNP.addParam("nowHappening", "action")
+        vars["nowHappeningEnabled"] = 'checked' if self._tickerTape.isNowHappeningEnabled() else ''
+        vars["nowHappeningURL"] = "%s#tickerTape" % str(urlNP)
+
+        urlST = urlHandlers.UHTickerTapeAction.getURL(self._conf)
         urlST.addParam("simpleText", "action")
-        vars["simpleTextURL"]=quoteattr("%s#tickerTape"%urlST)
+        vars["simpleTextURL"] = "%s#tickerTape" % urlST
+
         # simple ext
-        vars["text"]=quoteattr(self._tickerTape.getText())
-        if not vars.has_key("modifiedText"):
-            vars["modifiedText"]=""
-        else:
-            vars["modifiedText"]= i18nformat("""<font color="green"> _("(text saved)")</font>""")
+        vars["text"] = self._tickerTape.getText()
+        vars["modifiedText"] = vars.has_key("modifiedText")
 
         #enable or disable the contribution search feature
-        urlSB=urlHandlers.UHConfModifToggleSearch.getURL(self._conf)
-        if self._searchEnabled:
-            vars["searchBoxIcon"]=vars["enablePic"]
-            vars["searchBoxTextIcon"]=enabledText
-        else:
-            vars["searchBoxIcon"]=vars["disablePic"]
-            vars["searchBoxTextIcon"]=disabledText
-        vars["searchBoxURL"]=quoteattr(str(urlSB))
+        vars["searchBoxEnabled"] = 'checked' if self._searchEnabled else ''
+        vars["searchBoxURL"] = urlHandlers.UHConfModifToggleSearch.getURL(self._conf)
 
         #enable or disable navigation icons
         vars["confType"] = self._conf.getType()
-        urlSB=urlHandlers.UHConfModifToggleNavigationBar.getURL(self._conf)
-        if displayMgr.ConfDisplayMgrRegistery().getDisplayMgr(self._conf).getDisplayNavigationBar():
-            vars["navigationBoxIcon"]=vars["enablePic"]
-            vars["navigationBoxTextIcon"]=enabledText
-        else:
-            vars["navigationBoxIcon"]=vars["disablePic"]
-            vars["navigationBoxTextIcon"]=disabledText
-        vars["navigationBoxURL"]=quoteattr(str(urlSB))
+        vars["navigationBoxEnabled"] = 'checked' if displayMgr.ConfDisplayMgrRegistery().getDisplayMgr(self._conf).getDisplayNavigationBar() else  ''
+        vars["navigationBoxURL"] = urlHandlers.UHConfModifToggleNavigationBar.getURL(self._conf)
 
         return vars
 

@@ -97,87 +97,64 @@ class WConfModifRegForm( wcomponents.WTemplated ):
         self._conf = conference
 
     def _getURL(self, sect):
-        if sect.getId()=="sessions":
+        if sect.getId() == "sessions":
             return urlHandlers.UHConfModifRegFormSessions.getURL(self._conf)
-        if sect.getId()=="accommodation":
+        if sect.getId() == "accommodation":
             return urlHandlers.UHConfModifRegFormAccommodation.getURL(self._conf)
-        if sect.getId()=="reasonParticipation":
+        if sect.getId() == "reasonParticipation":
             return urlHandlers.UHConfModifRegFormReasonParticipation.getURL(self._conf)
-        if sect.getId()=="furtherInformation":
+        if sect.getId() == "furtherInformation":
             return urlHandlers.UHConfModifRegFormFurtherInformation.getURL(self._conf)
-        if sect.getId()=="socialEvents":
+        if sect.getId() == "socialEvents":
             return urlHandlers.UHConfModifRegFormSocialEvent.getURL(self._conf)
         return urlHandlers.UHConfModifRegFormGeneralSection.getURL(sect)
 
-    def _getSectionsHTML(self):
-        regForm=self._conf.getRegistrationForm()
-        html=[]
-        enabledBulb = Configuration.Config.getInstance().getSystemIconURL( "enabledSection" )
-        notEnabledBulb = Configuration.Config.getInstance().getSystemIconURL( "disabledSection" )
-        enabledText =  _("Click to disable")
-        disabledText =  _("Click to enable")
-        for gs in regForm.getSortedForms():
-            urlStatus = urlHandlers.UHConfModifRegFormEnableSection.getURL(self._conf)
-            urlStatus.addParam("section", gs.getId())
-            urlModif=self._getURL(gs)
-            img = enabledBulb
-            text = enabledText
-            if not gs.isEnabled():
-                img = notEnabledBulb
-                text = disabledText
-            checkbox="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
-            if isinstance(gs, registration.GeneralSectionForm) and not gs.isRequired():
-                checkbox="""
-                        <input type="checkbox" name="sectionsIds" value="%s">&nbsp;
-                        """%gs.getId()
-            selbox = """<select name="newpos%s" onChange="this.form.oldpos.value='%s';this.form.submit();">""" % (regForm.getSortedForms().index(gs),regForm.getSortedForms().index(gs))
-            for i in range(1,len(regForm.getSortedForms())+1):
-                if i== regForm.getSortedForms().index(gs)+1:
-                    selbox += "<option selected value='%s'>%s" % (i-1,i)
-                else:
-                    selbox += "<option value='%s'>%s" % (i-1,i)
-            selbox += """
-                </select>"""
-            if not isinstance(gs, registration.GeneralSectionForm) or not gs.isRequired():
-                toggleLink = """<a href=%s><img src="%s" alt="%s" class="imglink"></a>""" % (quoteattr(str(urlStatus)), img, text)
-            else:
-                toggleLink = ""
-            html.append("""
-                        <tr>
-                        <td>%s</td>
-                        <td>%s&nbsp;%s<a href=%s>%s</a></td>
-                        </tr>
-                        """%(toggleLink, selbox, checkbox, quoteattr(str(urlModif)), gs.getTitle()) )
-        html.insert(0, """<input type="hidden" name="oldpos"><table>""")
-        html.append("</table>")
-        return "".join(html)
+    def _getSectionsVars(self):
+        sections = []
+        regForm = self._conf.getRegistrationForm()
 
-    def _getStatusesHTML(self):
-        regForm=self._conf.getRegistrationForm()
-        html=[]
-        for st in regForm.getStatusesList():
+        for gs in regForm.getSortedForms():
+            section = {}
+
+            section['toggleUrl'] = ''
+            if not isinstance(gs, registration.GeneralSectionForm) or not gs.isRequired():
+                urlStatus = urlHandlers.UHConfModifRegFormEnableSection.getURL(self._conf)
+                urlStatus.addParam("section", gs.getId())
+                section['toggleUrl'] = str(urlStatus)
+
+            section['isEnabled'] = 'checked' if gs.isEnabled() else ''
+
+            section['checkbox'] = False
+            if isinstance(gs, registration.GeneralSectionForm) and not gs.isRequired():
+                section['checkbox'] = True
+                section['sectionId'] = gs.getId()
+
+            section['sectionIndex'] = regForm.getSortedForms().index(gs)
+            section['sectionsCnt'] = len(regForm.getSortedForms()) + 1
+
+            section['modifUrl'] = self._getURL(gs)
+            section['sectionTitle'] = gs.getTitle()
+
+            sections.append(section)
+        return sections
+
+    def _getStatusesVars(self):
+        stls = []
+        for st in self._conf.getRegistrationForm().getStatusesList():
+            status = {}
             urlStatus = urlHandlers.UHConfModifRegFormStatusModif.getURL(self._conf)
             urlStatus.addParam("statusId", st.getId())
-            html.append("""
-                        <tr>
-                        <td>
-                            &nbsp;<input type="checkbox" name="statusesIds" value="%s">&nbsp;<a href=%s>%s</a>
-                        </td>
-                        </tr>
-                        """%(st.getId(), quoteattr(str(urlStatus)), st.getCaption().strip() or  i18nformat("""-- [%s]  _("status with no name") --""")%st.getId()) )
-        if html == []:
-            html.append("""<tr><td style="padding-left:20px"><ul><li>%s</li></ul><br>%s</td></tr>""" % (_("No statuses defined yet."), _("You can use this option in order to create general statuses you will be able to use afterwards in the list of registrants. For instance, you can create a status \"paid\" in order to check if someone has paid or not.")))
-        html.insert(0, """<a href="" name="statuses"></a><table style="padding-top:20px">""")
-        html.append("</table>")
-        return "".join(html)
+            status["url"] = urlStatus
+            status["id"] = st.getId()
+            status["caption"] = st.getCaption().strip() or ('-- [%s]  _("status with no name") --' % st.getId())
+            stls.append(status)
+        return stls
 
-    def getVars( self ):
+    def getVars(self):
         vars = wcomponents.WTemplated.getVars(self)
         regForm = self._conf.getRegistrationForm()
-        vars["setStatusURL"]=urlHandlers.UHConfModifRegFormChangeStatus.getURL(self._conf)
-        vars["dataModificationURL"]=urlHandlers.UHConfModifRegFormDataModification.getURL(self._conf)
-        vars["enablePic"]=quoteattr(str(Configuration.Config.getInstance().getSystemIconURL( "enabledSection" )))
-        vars["disablePic"]=quoteattr(str(Configuration.Config.getInstance().getSystemIconURL( "disabledSection" )))
+        vars["setStatusURL"] = urlHandlers.UHConfModifRegFormChangeStatus.getURL(self._conf)
+        vars["dataModificationURL"] = urlHandlers.UHConfModifRegFormDataModification.getURL(self._conf)
         if regForm.isActivated():
             vars["activated"] = True
             vars["changeTo"] = "False"
@@ -186,17 +163,17 @@ class WConfModifRegForm( wcomponents.WTemplated ):
             d = ""
             if regForm.getStartRegistrationDate() is not None:
                 d = regForm.getStartRegistrationDate().strftime("%A %d %B %Y")
-            vars["startDate"]=d
+            vars["startDate"] = d
             d = ""
             if regForm.getEndRegistrationDate() is not None:
                 d = regForm.getEndRegistrationDate().strftime("%A %d %B %Y")
-            vars["endDate"]=d
+            vars["endDate"] = d
             vars["extraTimeAmount"] = regForm.getEndExtraTimeAmount()
             vars["extraTimeUnit"] = regForm.getEndExtraTimeUnit()
             d = ""
             if regForm.getModificationEndDate() is not None:
                 d = regForm.getModificationEndDate().strftime("%A %d %B %Y")
-            vars["modificationEndDate"]=d
+            vars["modificationEndDate"] = d
             vars["announcement"] = regForm.getAnnouncement()
             vars["disabled"] = ""
             vars["contactInfo"] = regForm.getContactInfo()
@@ -204,18 +181,9 @@ class WConfModifRegForm( wcomponents.WTemplated ):
             if regForm.getUsersLimit() > 0:
                 vars["usersLimit"] = regForm.getUsersLimit()
             vars["title"] = regForm.getTitle()
-            vars["notification"] = i18nformat("""
-                                    <table>
-                                        <tr>
-                                            <td align="right"><b> _("To List"):</b></td>
-                                            <td align="left">%s</td>
-                                        </tr>
-                                        <tr>
-                                            <td align="right"><b> _("Cc List"):</b></td>
-                                            <td align="left">%s</td>
-                                        </tr>
-                                    </table>
-                                    """)%(", ".join(regForm.getNotification().getToList()) or i18nformat("""--_("no TO list")--"""), ", ".join(regForm.getNotification().getCCList()) or i18nformat("""--_("no CC list")--"""))
+            vars["notification"] = True
+            vars["notificationToList"] = ", ".join(regForm.getNotification().getToList()) or '--_("no TO list")--'
+            vars["notificationCcList"] = ", ".join(regForm.getNotification().getCCList()) or '--_("no CC list")--'
             vars["mandatoryAccount"] =  _("Yes")
             if not regForm.isMandatoryAccount():
                 vars["mandatoryAccount"] =  _("No")
@@ -244,16 +212,16 @@ class WConfModifRegForm( wcomponents.WTemplated ):
             vars["contactInfo"] = ""
             vars["usersLimit"] = ""
             vars["title"] = ""
-            vars["notification"] = ""
+            vars["notification"] = False
             vars["mandatoryAccount"] = ""
             vars["notificationSender"] = ""
             vars["sendRegEmail"] = ""
             vars["sendReceiptEmail"] = ""
             vars["sendPaidEmail"] = ""
-        vars["sections"] = self._getSectionsHTML()
-        vars["actionSectionURL"]=quoteattr(str(urlHandlers.UHConfModifRegFormActionSection.getURL(self._conf)))
-        vars["statuses"] = self._getStatusesHTML()
-        vars["actionStatusesURL"]=quoteattr(str(urlHandlers.UHConfModifRegFormActionStatuses.getURL(self._conf)))
+        vars["sections"] = self._getSectionsVars()
+        vars["actionSectionURL"] = urlHandlers.UHConfModifRegFormActionSection.getURL(self._conf)
+        vars["statuses"] = self._getStatusesVars()
+        vars["actionStatusesURL"] = urlHandlers.UHConfModifRegFormActionStatuses.getURL(self._conf)
         return vars
 
 class WPConfModifRegFormDataModification( WPConfModifRegFormBase ):
@@ -270,40 +238,40 @@ class WConfModifRegFormDataModification( wcomponents.WTemplated ):
     def getVars( self ):
         vars = wcomponents.WTemplated.getVars(self)
         regForm = self._conf.getRegistrationForm()
-        vars["postURL"]=urlHandlers.UHConfModifRegFormPerformDataModification.getURL(self._conf)
-        vars["sDay"]=""
-        vars["sMonth"]=""
-        vars["sYear"]=""
+        vars["postURL"] = urlHandlers.UHConfModifRegFormPerformDataModification.getURL(self._conf)
+        vars["sDay"] = ""
+        vars["sMonth"] = ""
+        vars["sYear"] = ""
         if regForm.getStartRegistrationDate() is not None:
             d = regForm.getStartRegistrationDate()
-            vars["sDay"]=d.day
-            vars["sMonth"]=d.month
-            vars["sYear"]=d.year
-        vars["eDay"]=""
-        vars["eMonth"]=""
-        vars["eYear"]=""
+            vars["sDay"] = d.day
+            vars["sMonth"] = d.month
+            vars["sYear"] = d.year
+        vars["eDay"] = ""
+        vars["eMonth"] = ""
+        vars["eYear"] = ""
         if regForm.getEndRegistrationDate() is not None:
             d = regForm.getEndRegistrationDate()
-            vars["eDay"]=d.day
-            vars["eMonth"]=d.month
-            vars["eYear"]=d.year
-        vars["meDay"]=""
-        vars["meMonth"]=""
-        vars["meYear"]=""
+            vars["eDay"] = d.day
+            vars["eMonth"] = d.month
+            vars["eYear"] = d.year
+        vars["meDay"] = ""
+        vars["meMonth"] = ""
+        vars["meYear"] = ""
         if regForm.getModificationEndDate() is not None:
             d = regForm.getModificationEndDate()
-            vars["meDay"]=d.day
-            vars["meMonth"]=d.month
-            vars["meYear"]=d.year
+            vars["meDay"] = d.day
+            vars["meMonth"] = d.month
+            vars["meYear"] = d.year
         vars["announcement"] = regForm.getAnnouncement()
         vars["contactInfo"] = regForm.getContactInfo()
         vars["usersLimit"] = regForm.getUsersLimit()
         vars["title"] = regForm.getTitle()
         vars["toList"] = ", ".join(regForm.getNotification().getToList())
         vars["ccList"] = ", ".join(regForm.getNotification().getCCList())
-        vars["mandatoryAccount"]=""
+        vars["mandatoryAccount"] = ""
         if regForm.isMandatoryAccount():
-            vars["mandatoryAccount"]= "CHECKED"
+            vars["mandatoryAccount"] = "CHECKED"
         vars["notificationSender"] = regForm.getNotificationSender()
         vars["sendRegEmail"] = ""
         vars["sendReceiptEmail"] = ""

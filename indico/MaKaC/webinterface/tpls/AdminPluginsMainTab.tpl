@@ -43,12 +43,13 @@
                 % for pluginType in PluginsHolder.getPluginTypes(includeNonVisible=False):
                 <tr>
                     <td>
-                        <input type="checkbox" onclick="jQuery(this).next().click(); return false;"
+                        <label class="toggle-checkbox">
+                        <input type="checkbox" class="toggle-checkbox"
 
                         % if not pluginType.isUsable():
                             disabled="true"
                         % elif pluginType.isActive():
-                            checked="true"
+                            checked
                         % endif
                         />
                         % if not pluginType.isUsable():
@@ -66,6 +67,7 @@
                                 (${ pluginType.getDescription() })
                             </span>
                         % endif
+                        </label>
                     </td>
                 </tr>
                 % endfor

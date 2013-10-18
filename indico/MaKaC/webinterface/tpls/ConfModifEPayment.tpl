@@ -75,17 +75,19 @@ al = minfo.getAdminList()
     <tr>
         <td class="dataCaptionTD">
           <span class="dataCaptionFormat"> ${ _("Mod of Payments")}</span>
-          <br>
-          <br>
-          <img src=${ enablePic } alt="${ _("Click to disable")}"> <small> ${ _("Enabled section")}</small>
-          <br>
-          <img src=${ disablePic } alt="${ _("Click to enable")}"> <small> ${ _("Disabled section")}</small>
         </td>
         <td bgcolor="white" width="100%" class="blacktext" style="padding-left:20px">
-            <form action="" method="POST">
-            ${ sections }
+            <table align="left">
+                % for section in sections:
+                <tr>
+                    <td>
+                        <input type="checkbox" class="toggle-checkbox" ${ section['isEnabled'] } data-url="${ section['toggleUrl'] }">
+                        <a href="${ section['modifUrl'] }">${ section['title'] }</a>
+                    </td>
+                </tr>
+                % endfor
+            </table>
         </td>
-        </form>
     </tr>
     <tr>
         <td colspan="3" class="horizontalLine">&nbsp;</td>

@@ -53,39 +53,27 @@ class WConfModifEPayment( wcomponents.WTemplated ):
         self._aw = aw
 
     def _getSectionsHTML(self):
-        modPay=self._conf.getModPay()
-        html=[]
-        enabledBulb = Configuration.Config.getInstance().getSystemIconURL( "enabledSection" )
-        notEnabledBulb = Configuration.Config.getInstance().getSystemIconURL( "disabledSection" )
-        enabledText = _("Click to disable")
-        disabledText = _("Click to enable")
-        for gs in modPay.getSortedModPay():
+        sections = []
+        modPay = self._conf.getModPay()
 
+        for gs in modPay.getSortedModPay():
+            section = {}
             urlStatus = urlHandlers.UHConfModifEPaymentEnableSection.getURL(self._conf)
             urlStatus.addParam("epayment", gs.getId())
-            urlModif = gs.getConfModifEPaymentURL(self._conf)
+            section['toggleUrl'] = urlStatus
+            section['isEnabled'] = 'checked' if gs.isEnabled() else ''
 
-            img = enabledBulb
-            text = enabledText
-            if not gs.isEnabled():
-                img = notEnabledBulb
-                text = disabledText
+            section['modifUrl'] = gs.getConfModifEPaymentURL(self._conf)
+            section['title'] = gs.getTitle()
+            sections.append(section)
 
-            pluginHTML = gs.getPluginSectionHTML(self._conf, self._aw, urlStatus, urlModif, img, text)
-            html.append(pluginHTML)
-
-        html.insert(0, """<a href="" name="sections"></a><input type="hidden" name="oldpos"><table align="left">""")
-        html.append("</table>")
-
-        return "".join(html)
+        return sections
 
 
     def getVars( self ):
         vars = wcomponents.WTemplated.getVars(self)
-        modPay=self._conf.getModPay()
-        vars["setStatusURL"]=urlHandlers.UHConfModifEPaymentChangeStatus.getURL(self._conf)
-        vars["enablePic"]=quoteattr(str(Configuration.Config.getInstance().getSystemIconURL( "enabledSection" )))
-        vars["disablePic"]=quoteattr(str(Configuration.Config.getInstance().getSystemIconURL( "disabledSection" )))
+        modPay = self._conf.getModPay()
+        vars["setStatusURL"] = urlHandlers.UHConfModifEPaymentChangeStatus.getURL(self._conf)
         if modPay.isActivated():
             vars["changeTo"] = "False"
             vars["status"] = _("ENABLED")

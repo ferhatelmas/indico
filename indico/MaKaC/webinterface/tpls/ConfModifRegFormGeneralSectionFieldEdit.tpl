@@ -34,7 +34,7 @@
   }
 </script>
 
-<form id="WConfModifRegFormGeneralSectionFieldEdit" name="WConfModifRegFormGeneralSectionFieldEdit" action=${ postURL } method="POST" onsubmit="return controle();">
+<form id="WConfModifRegFormGeneralSectionFieldEdit" name="WConfModifRegFormGeneralSectionFieldEdit" action="${ postURL }" method="POST" onsubmit="return controle();">
   <table width="80%" align="center" border="0" style="border-left: 1px solid #777777">
     <tr>
       <td class="groupTitle" colspan="2"> ${ _("Modify general field")}</td>
@@ -48,7 +48,11 @@
     <tr>
       <td class="titleCellTD"><span class="titleCellFormat"> ${ _("Type of field")}</span></td>
       <td bgcolor="white" class="blacktext" width="100%">
-      ${ inputtypes }
+        <select name="input" onchange="javascript:$E('WConfModifRegFormGeneralSectionFieldEdit').dom.submit();  $E('submitButton').dom.disabled=true; $E('cancelButton').dom.disabled=true;" ${ 'disabled="true"' if inputTypes['isDisabled'] else "" }>
+            % for selec in inputTypes['selectBox']:
+                <option value="${ selec['key'] }" ${ "selected" if selec['isSelected'] else "" }>${ selec['name'] }</option>
+            % endfor
+        </select>
       </td>
     </tr>
     <tr>
@@ -60,7 +64,7 @@
     <tr>
       <td class="titleCellTD"><span class="titleCellFormat"> ${ _("Mandatory field")}</span></td>
       <td bgcolor="white" class="blacktext" width="100%">
-      <input type="checkbox" name="mandatory" size="60" ${ mandatory } ${ 'disabled="disabled"' if mandatoryLocked else '' }> ( ${ _("uncheck if it is not a mandatory field")})
+      <input type="checkbox" name="mandatory" size="60" ${ "checked" if mandatory else "" } ${ 'disabled="disabled"' if mandatoryLocked else '' }> (${ _("uncheck if it is not a mandatory field") })
       </td>
     </tr>
 

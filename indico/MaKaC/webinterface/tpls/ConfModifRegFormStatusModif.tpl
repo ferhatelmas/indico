@@ -1,4 +1,4 @@
-<form action=${ postURL } method="POST">
+<form action="${ postURL }" method="POST">
     <table width="80%" align="center" border="0" style="border-left: 1px solid #777777">
         <tr>
             <td class="groupTitle" colspan="2">${ _("Modify status")}</td>
@@ -21,7 +21,21 @@
                         <input type="submit" class="btn" name="defaultvalue" value="${ _("set as default")}"><br>
                     </td>
                 </tr>
-                <tr><td>${ values }</td></tr>
+                <tr>
+                    <td>
+                        <table>
+                            % for v in values:
+                                <tr>
+                                    <td align="left" style="padding-left:10px"><input type="checkbox" name="valuesIds" value="${ v['id'] }">${ v['caption'] }
+                                    % if v['isDefault']:
+                                        <i><b>(${_("default") })</b></i>
+                                    % endif
+                                    </td>
+                                </tr>
+                            % endfor
+                        </table>
+                    </td>
+                </tr>
             </table>
           </td>
         </tr>

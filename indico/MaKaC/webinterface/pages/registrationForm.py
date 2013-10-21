@@ -1044,148 +1044,145 @@ class WPConfModifRegFormGeneralSectionDataModif(WPConfModifRegFormGeneralSection
         return wc.getHTML(p)
 
 
-class WConfModifRegFormGeneralSectionDataModif( wcomponents.WTemplated ):
+class WConfModifRegFormGeneralSectionDataModif(wcomponents.WTemplated):
 
-    def __init__( self, generalSectionForm ):
+    def __init__(self, generalSectionForm):
         self._generalSectionForm = generalSectionForm
 
-    def getVars( self ):
+    def getVars(self):
         vars = wcomponents.WTemplated.getVars(self)
         vars["title"] = quoteattr(self._generalSectionForm.getTitle())
-        vars["description"] =  self._generalSectionForm.getDescription()
+        vars["description"] = self._generalSectionForm.getDescription()
         return vars
 
-class WPConfModifRegFormGeneralSectionFieldAdd( WPConfModifRegFormGeneralSectionBase ):
+
+class WPConfModifRegFormGeneralSectionFieldAdd(WPConfModifRegFormGeneralSectionBase):
 
     def __init__(self, rh, section, tmpField):
         WPConfModifRegFormGeneralSectionBase.__init__(self, rh, section)
-        self._tmpField=tmpField
+        self._tmpField = tmpField
 
-    def _getTabContent( self, params ):
+    def _getTabContent(self, params):
         wc = WConfModifRegFormGeneralSectionFieldEdit(self._tmpField)
-        p = {'postURL': quoteattr(str(urlHandlers.UHConfModifRegFormGeneralSectionFieldPerformAdd.getURL( self._generalSectionForm )))
-            }
+        p = {'postURL': urlHandlers.UHConfModifRegFormGeneralSectionFieldPerformAdd.getURL(self._generalSectionForm)}
         return wc.getHTML(p)
 
-class WConfModifRegFormGeneralSectionFieldEdit( wcomponents.WTemplated ):
 
-    def __init__( self, generalField=None):
+class WConfModifRegFormGeneralSectionFieldEdit(wcomponents.WTemplated):
+
+    def __init__(self, generalField=None):
         self._generalField = generalField
 
-    def _getFieldTypesHTML(self):
-        disabled = ""
-        if self._generalField and self._generalField.isLocked('input'):
-            disabled = """ disabled="disabled"""
-        html=["""<select name="input" onchange="javascript:$E('WConfModifRegFormGeneralSectionFieldEdit').dom.submit();  $E('submitButton').dom.disabled=true; $E('cancelButton').dom.disabled=true;"%s>""" % disabled]
-        keylist=registration.FieldInputs.getAvailableInputKeys()
+    def _getFieldTypesVars(self):
+        inputTypes = {}
+        inputTypes['isDisabled'] = self._generalField and self._generalField.isLocked('input')
+
+        selectBox = []
+        keylist = registration.FieldInputs.getAvailableInputKeys()
         keylist.sort()
         for key in keylist:
-            selec=""
-            if self._generalField is not None:
-                if self._generalField.getInput().getId() == key:
-                    selec="selected"
-            html.append("""
-                        <option value="%s" %s>%s</option>
-                        """%(key, selec, registration.FieldInputs.getAvailableInputKlassById(key).getName()))
-        html.append("""</select>""")
-        return "".join(html)
+            select = {}
+            select['isSelected'] = self._generalField and self._generalField.getInput().getId() == key
+            select['key'] = key
+            select['name'] = registration.FieldInputs.getAvailableInputKlassById(key).getName()
+            selectBox.append(select)
+        inputTypes['selectBox'] = selectBox
+        return inputTypes
 
-    def getVars( self ):
+    def getVars(self):
         vars = wcomponents.WTemplated.getVars(self)
-        vars["caption"] = ""
-        vars["description"] = ""
-        vars["mandatory"] =  """ checked="checked" """
-        vars["mandatoryLocked"] = False
-        #vars["billable"]= """ checked="checked" """
-        #vars["price"]=""
+
         if self._generalField is not None:
             vars["caption"] = quoteattr(self._generalField.getCaption())
             vars["description"] = self._generalField.getDescription()
-            #vars["price"]= quoteattr(self._generalField.getPrice())
-            if not self._generalField.isMandatory():
-                vars["mandatory"] =  ""
+            vars["mandatory"] = self._generalField.isMandatory()
             vars["mandatoryLocked"] = self._generalField.isLocked('mandatory')
-            #if not self._generalField.isBillable():
-            #    vars["billable"] =  ""
-        vars["inputtypes"]=self._getFieldTypesHTML()
-        vars["specialOptions"]=""
+        else:
+            vars["caption"] = ""
+            vars["description"] = ""
+            vars["mandatory"] = True
+            vars["mandatoryLocked"] = False
+
+        vars["inputTypes"] = self._getFieldTypesVars()
+        # TODO: field method should return vars, not html
+        vars["specialOptions"] = ""
         if self._generalField is not None:
-            vars["specialOptions"]=self._generalField.getInput()._getSpecialOptionsHTML()
+            vars["specialOptions"] = self._generalField.getInput()._getSpecialOptionsHTML()
         return vars
 
-class WPConfModifRegFormGeneralSectionFieldModif( WPConfModifRegFormGeneralSectionBase ):
+
+class WPConfModifRegFormGeneralSectionFieldModif(WPConfModifRegFormGeneralSectionBase):
 
     def __init__(self, rh, field, tmpField):
         WPConfModifRegFormGeneralSectionBase.__init__(self, rh, field.getParent())
-        self._sectionField=field
-        self._tmpField=tmpField
+        self._sectionField = field
+        self._tmpField = tmpField
 
-    def _getTabContent( self, params ):
+    def _getTabContent(self, params):
         wc = WConfModifRegFormGeneralSectionFieldEdit(self._tmpField)
-        p = {'postURL': quoteattr(str(urlHandlers.UHConfModifRegFormGeneralSectionFieldPerformModif.getURL( self._sectionField )))
-            }
+        p = {'postURL': urlHandlers.UHConfModifRegFormGeneralSectionFieldPerformModif.getURL(self._sectionField)}
         return wc.getHTML(p)
+
 
 class WPConfModifRegFormGeneralSectionFieldRemConfirm(WPConfModifRegFormGeneralSectionBase):
 
-    def __init__(self,rh,gs, fields):
+    def __init__(self, rh, gs, fields):
         WPConfModifRegFormGeneralSectionBase.__init__(self, rh, gs)
         self._fields = fields
 
-    def _getTabContent(self,params):
+    def _getTabContent(self, params):
         wc = wcomponents.WConfirmation()
 
-        fields = ''.join(list("<li>{0}</li>".format(self._generalSectionForm.getFieldById(id).getCaption() \
-                                                        for s in self._fields)))
+        fields = ''.join("<li>{0}</li>".format(self._generalSectionForm.getFieldById(id).getCaption()
+                                               for s in self._fields))
 
-        msg = {'challenge': _("Are you sure you want to delete the following fields of the section '{0}'".format(
-                        self._generalSectionForm.getTitle())),
+        msg = {
+               'challenge': _("Are you sure you want to delete the following fields of the section '{0}'".format(
+                            self._generalSectionForm.getTitle())),
                'target': "<ul>{0}</ul>".format(fields),
                'subtext': _("Please note that any existing registrants will lose this information")
                }
 
-        url=urlHandlers.UHConfModifRegFormGeneralSectionFieldRemove.getURL(self._generalSectionForm)
-        return wc.getHTML(msg,url,{"fieldsIds":self._fields})
+        url = urlHandlers.UHConfModifRegFormGeneralSectionFieldRemove.getURL(self._generalSectionForm)
+        return wc.getHTML(msg, url, {"fieldsIds": self._fields})
 
-class WPConfModifRegFormStatusModif( WPConfModifRegFormBase ):
+
+class WPConfModifRegFormStatusModif(WPConfModifRegFormBase):
 
     def __init__(self, rh, st, tmpst):
         WPConfModifRegFormBase.__init__(self, rh, st.getConference())
-        self._status=st
-        self._tempStatus=tmpst
+        self._status = st
+        self._tempStatus = tmpst
 
-    def _getTabContent( self, params ):
+    def _getTabContent(self, params):
         wc = WConfModifRegFormStatusModif(self._status, self._tempStatus)
-        p = {
-
-             'postURL': quoteattr(str(urlHandlers.UHConfModifRegFormStatusPerformModif.getURL( self._status )))
-            }
+        p = {'postURL': urlHandlers.UHConfModifRegFormStatusPerformModif.getURL(self._status)}
         return wc.getHTML(p)
 
-class WConfModifRegFormStatusModif( wcomponents.WTemplated ):
 
-    def __init__( self, st, tmpst ):
+class WConfModifRegFormStatusModif(wcomponents.WTemplated):
+
+    def __init__(self, st, tmpst):
         self._conf = st.getConference()
-        self._status=st
-        self._tempStatus=tmpst
+        self._status = st
+        self._tempStatus = tmpst
 
-    def _getStatusValuesHTML(self):
-        html=["""<table>"""]
+    def _getStatusValuesVars(self):
+        values = []
         for v in self._tempStatus.getStatusValuesList(True):
-            default=""
-            if self._tempStatus.getDefaultValue() is not None and  self._tempStatus.getDefaultValue().getId() == v.getId():
-                default="""<i><b> (default)</b></i>"""
-            html.append("""<tr>
-                                <td align="left" style="padding-left:10px"><input type="checkbox" name="valuesIds" value="%s">%s%s</td>
-                            </tr>
-                        """%(v.getId(), self.htmlText(v.getCaption()), default) )
-        html.append("""</table>""")
-        return "".join(html)
+            value = {}
+            value['id'] = v.getId()
+            value['caption'] = self.htmlText(v.getCaption())
+            value['isDefault'] = (self._tempStatus.getDefaultValue() and
+                                  self._tempStatus.getDefaultValue().getId() == v.getId())
+            values.append(value)
 
-    def getVars( self ):
+        return values
+
+    def getVars(self):
         vars = wcomponents.WTemplated.getVars(self)
         vars["caption"] = self._tempStatus.getCaption()
-        vars["values"] = self._getStatusValuesHTML()
+        vars["values"] = self._getStatusValuesVars()
         return vars
 
 # ----------------------------------------------------------

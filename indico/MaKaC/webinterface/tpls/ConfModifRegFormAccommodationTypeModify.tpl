@@ -18,13 +18,21 @@
         <tr>
           <td class="titleCellTD"><span class="titleCellFormat">${ _("Disable type")}</span></td>
           <td bgcolor="white" class="blacktext" width="100%">
-            <input type="checkbox" name="cancelled" size="60" ${ checked }>
+            <input type="checkbox" name="cancelled" size="60"
+            % if isCancelled:
+                checked
+            % endif
+            >
           </td>
         </tr>
         <tr>
             <td class="titleCellTD"><span class="titleCellFormat">Is Billable</span></td>
             <td bgcolor="white" class="blacktext" width="100%">
-              <input type="checkbox" name="billable" size="60" ${ billable }>${ _("(uncheck if it is not billable)") }
+              <input type="checkbox" name="billable" size="60"
+                % if isBillable:
+                    checked
+                % endif
+              >${ _("(uncheck if it is not billable)") }
             </td>
           </tr>
           <tr>

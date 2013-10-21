@@ -1,4 +1,4 @@
-<form action=${ postURL } method="POST">
+<form action="${ postURL }" method="POST">
     <table width="80%" align="center" border="0" style="border-left: 1px solid #777777">
         <tr>
             <td class="groupTitle" colspan="2">${ _("Add") } ${ title }</td>
@@ -9,7 +9,13 @@
             <table width="100%">
                 <tr>
                     <td width="100%">
-                        ${ sessions }
+                        % if sessions['list']:
+                            % for session in sessions['list']:
+                                <p><input type="checkbox" name="sessionIds" value="${ session['id'] }" >${ session['title'] }</p>
+                            % endfor
+                        % else:
+                            ${ sessions['emptyMessage'] }
+                        % endif
                     </td>
                 </tr>
             </table>

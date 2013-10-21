@@ -1,4 +1,4 @@
-<form action=${ postURL } method="POST">
+<form action="${ postURL }" method="POST">
     <table width="80%" align="center" border="0" style="border-left: 1px solid #777777">
         <tr>
             <td class="groupTitle" colspan="2">${ _("Modify a social event")}</td>
@@ -24,14 +24,22 @@
         <tr>
           <td class="titleCellTD"><span class="titleCellFormat">${ _("Cancel item")}</span></td>
           <td bgcolor="white" class="blacktext" width="100%">
-            <input type="checkbox" name="cancelled" size="60" ${ checked }>${ _("for the following reason")}
+            <input type="checkbox" name="cancelled" size="60"
+            % if isCancelled:
+                checked
+            % endif
+            >${ _("for the following reason")}
             <input type="text" name="reason" size="30" value="${ reason }">
           </td>
         </tr>
         <tr>
           <td class="titleCellTD"><span class="titleCellFormat">Is Billable</span></td>
           <td bgcolor="white" class="blacktext" width="100%">
-            <input type="checkbox" name="billable" size="60" ${billable}>${ _("(uncheck if it is not billable)") }
+            <input type="checkbox" name="billable" size="60"
+            % if isBillable:
+                checked
+            % endif
+            >${ _("(uncheck if it is not billable)") }
           </td>
         </tr>
         <tr>
@@ -43,7 +51,11 @@
         <tr>
           <td class="titleCellTD"><span class="titleCellFormat">Price is per place</span></td>
           <td bgcolor="white" class="blacktext" width="100%">
-            <input type="checkbox" name="pricePerPlace" size="60" ${pricePerPlace}>${ _("(uncheck if the price is the same no matter how many places are chosen)") }
+            <input type="checkbox" name="pricePerPlace" size="60"
+            % if isPricePerPlace:
+                checked
+            % endif
+            >${ _("(uncheck if the price is the same no matter how many places are chosen)") }
           </td>
         </tr>
         <tr>

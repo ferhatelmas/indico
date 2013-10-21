@@ -1,4 +1,4 @@
-<form action=${ postURL } method="POST">
+<form action="${ postURL }" method="POST">
     <table width="80%" align="center" border="0" style="border-left: 1px solid #777777">
         <tr>
             <td class="groupTitle" colspan="2">${ _("Modify a session")}</td>
@@ -12,7 +12,11 @@
         <tr>
           <td class="titleCellTD"><span class="titleCellFormat">Is Billable</span></td>
           <td bgcolor="white" class="blacktext" width="100%">
-            <input type="checkbox" name="billable" size="60" ${ billable }>${ _("(uncheck if it is not billable)") }
+            <input type="checkbox" name="billable" size="60"
+            % if isBillable:
+                checked
+            % endif
+            >${ _("(uncheck if it is not billable)") }
           </td>
         </tr>
         <tr>

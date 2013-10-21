@@ -1,4 +1,4 @@
-<form action=${ postURL } method="POST">
+<form action="${ postURL }" method="POST">
     <table width="80%" align="center" border="0" style="border-left: 1px solid #777777">
         <tr>
             <td class="groupTitle" colspan="2"> ${ _("Modifying Sessions (basic data)")}</td>
@@ -13,7 +13,21 @@
         </tr>
         <tr>
             <td nowrap class="titleCellTD"><span class="titleCellFormat"> ${ _("Type of sessions' form")}<br><small>( ${ _("how many sessions the<br>registrant can choose<br>please note that billing <br>not possible when using '2 choices'")} )</small></span></td>
-            <td align="left">${ types }</td>
+            <td align="left">
+                <select name="sessionFormType">
+                    <option value="2priorities"
+                    % if is2priorities:
+                        selected
+                    % endif
+                    > ${ _("2 choices") }</option>
+
+                    <option value="all"
+                    % if isAll:
+                        selected
+                    % endif
+                    > ${ _("multiple") }</option>
+                </select>
+            </td>
         </tr>
         <tr><td>&nbsp;</td></tr>
         <tr>

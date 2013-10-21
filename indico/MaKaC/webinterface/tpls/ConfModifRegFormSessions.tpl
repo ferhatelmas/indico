@@ -33,7 +33,7 @@
                     <form action="${ postURL }" method="POST">
                     <td width="100%">
                         % if sessions:
-                            % for session in sessionsVars["sessionList"]:
+                            % for session in sessions["sessionList"]:
                                 <div>
                                     <input type="checkbox" name="sessionIds" value="${ session['id'] }">
                                     <a href="${ session['url'] }">${ session["title"] }</a>

@@ -279,12 +279,12 @@ class WPRoomBookingMapOfRoomsWidget(WPNotDecorated):
 
 # 2. List of ...
 
-class WPRoomBookingRoomList( WPRoomBookingBase ):
+class WPRoomBookingRoomList(WPRoomBookingBase):
 
-    def __init__( self, rh, onlyMy = False ):
+    def __init__(self, rh, onlyMy=False):
         self._rh = rh
         self._onlyMy = onlyMy
-        WPRoomBookingBase.__init__( self, rh )
+        WPRoomBookingBase.__init__(self, rh)
 
     def _getTitle(self):
         if self._onlyMy:
@@ -292,16 +292,16 @@ class WPRoomBookingRoomList( WPRoomBookingBase ):
         else:
             return WPRoomBookingBase._getTitle(self) + " - " + _("Found rooms")
 
-    def _setCurrentMenuItem( self ):
+    def _setCurrentMenuItem(self):
         if self._onlyMy:
             self._myRoomListOpt.setActive(True)
         else:
             self._roomSearchOpt.setActive(True)
 
+    def _getBody(self, params):
+        wc = wcomponents.WRoomBookingRoomList(self._rh, standalone=True, onlyMy=self._onlyMy)
+        return wc.getHTML(params)
 
-    def _getBody( self, params ):
-        wc = wcomponents.WRoomBookingRoomList( self._rh, standalone = True, onlyMy = self._onlyMy )
-        return wc.getHTML( params )
 
 class WPRoomBookingBookingList( WPRoomBookingBase ):
 

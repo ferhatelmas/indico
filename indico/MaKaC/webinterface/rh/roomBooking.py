@@ -22,6 +22,7 @@ from MaKaC.plugins.base import pluginId
 # Most of the following imports are probably not necessary - to clean
 
 import os
+import re
 import time
 from collections import defaultdict
 
@@ -853,61 +854,51 @@ class RHRoomBookingMapOfRoomsWidget(RHRoomBookingBase):
 
 # 2. List of ...
 
-class RHRoomBookingRoomList( RHRoomBookingBase ):
+class RHRoomBookingRoomList(RHRoomBookingBase):
 
-    def _checkParams( self, params ):
+    def _checkParams(self, params):
 
         self._roomLocation = None
-        if params.get("roomLocation") and len( params["roomLocation"].strip() ) > 0:
+        if params.get("roomLocation") and params["roomLocation"].strip():
             self._roomLocation = params["roomLocation"].strip()
 
         self._freeSearch = None
-        if params.get("freeSearch") and len( params["freeSearch"].strip() ) > 0:
-            s = params["freeSearch"].strip()
-            # Remove commas
-            self._freeSearch = ""
-            for c in s:
-                if c != ',': self._freeSearch += c
+        if params.get("freeSearch") and params["freeSearch"].strip():
+            self._freeSearch = re.sub(',', '', params["freeSearch"].strip())
 
         self._capacity = None
-        if params.get("capacity") and len( params["capacity"].strip() ) > 0:
-            self._capacity = int( params["capacity"].strip() )
+        if params.get("capacity") and params["capacity"].strip():
+            try: self._capacity = int(params["capacity"].strip())
+            except: self._capacity = None
 
         self._availability = "Don't care"
-        if params.get("availability") and len( params["availability"].strip() ) > 0:
+        if params.get("availability") and params["availability"].strip():
             self._availability = params["availability"].strip()
 
         if self._availability != "Don't care":
-            self._checkParamsRepeatingPeriod( params )
+            self._checkParamsRepeatingPeriod(params)
 
-        self._includePrebookings = False
-        if params.get( 'includePrebookings' ) == "on": self._includePrebookings = True
-
-        self._includePendingBlockings = False
-        if params.get( 'includePendingBlockings' ) == "on": self._includePendingBlockings = True
+        self._includePrebookings = params.get('includePrebookings') == "on"
+        self._includePendingBlockings = params.get('includePendingBlockings') == "on"
 
         # The end of "avail/don't care"
 
         # Equipment
-        self._equipment = []
-        for k, v in params.iteritems():
-            if k[0:4] == "equ_" and v == "on":
-                self._equipment.append( k[4:100] )
+        self._equipment = [k[4:100] for k, v in params.iteritems() if k[0:4] == 'equ_' and v == 'on']
 
         # Special
-        self._isReservable = self._ownedBy = self._isAutoConfirmed = None
-        self._isActive = True
-
-        if params.get( 'isReservable' ) == "on": self._isReservable = True
-        if params.get( 'isAutoConfirmed' ) == "on": self._isAutoConfirmed = True
+        self._isReservable = True if params.get('isReservable') == "on" else None
+        self._isAutoConfirmed = True if params.get('isAutoConfirmed') == "on" else None
 
         # only admins can choose to consult non-active rooms
-        if self._getUser() and self._getUser().isRBAdmin() and params.get( 'isActive', None ) != "on":
+        self._isActive = True
+        if self._getUser() and self._getUser().isRBAdmin() and params.get('isActive', None) != "on":
             self._isActive = None
 
-        self._onlyMy = params.get( 'onlyMy' ) == "on"
+        self._onlyMy = params.get('onlyMy') == "on"
+        self._ownedBy = None
 
-    def _businessLogic( self ):
+    def _businessLogic(self):
         if self._onlyMy: # Can't be done in checkParams since it must be after checkProtection
             self._title = "My rooms"
             self._ownedBy = self._getUser()
@@ -919,7 +910,7 @@ class RHRoomBookingRoomList( RHRoomBookingBase ):
         if self._isAutoConfirmed:
             r.resvsNeedConfirmation = False
         for eq in self._equipment:
-            r.insertEquipment( eq )
+            r.insertEquipment(eq)
 
         if self._onlyMy:
             rooms = self._ownedBy.getRooms()
@@ -931,7 +922,7 @@ class RHRoomBookingRoomList( RHRoomBookingBase ):
                                                   pendingBlockings=self._includePendingBlockings,
                                                   onlyPublic=self._isReservable)
             # Special care for capacity (20% => greater than)
-            if len (rooms) == 0:
+            if not rooms:
                 rooms = CrossLocationQueries.getRooms(location=self._roomLocation,
                                                       freeText=self._freeSearch,
                                                       ownedBy=self._ownedBy,
@@ -953,38 +944,35 @@ class RHRoomBookingRoomList( RHRoomBookingBase ):
             session["rbDefaultEndDT"] = p.endDT
             session["rbDefaultRepeatability"] = p.repeatability
 
-            available = ( self._availability == "Available" )
+            available = (self._availability == "Available")
 
-            rooms = CrossLocationQueries.getRooms( \
-                location = self._roomLocation,
-                freeText = self._freeSearch,
-                ownedBy = self._ownedBy,
-                roomExample = r,
-                resvExample = p,
-                available = available,
-                pendingBlockings = self._includePendingBlockings )
+            rooms = CrossLocationQueries.getRooms(location=self._roomLocation,
+                                                  freeText=self._freeSearch,
+                                                  ownedBy=self._ownedBy,
+                                                  roomExample=r,
+                                                  resvExample=p,
+                                                  available=available,
+                                                  pendingBlockings=self._includePendingBlockings)
             # Special care for capacity (20% => greater than)
-            if len ( rooms ) == 0:
-                rooms = CrossLocationQueries.getRooms( \
-                    location = self._roomLocation,
-                    freeText = self._freeSearch,
-                    ownedBy = self._ownedBy,
-                    roomExample = r,
-                    resvExample = p,
-                    available = available,
-                    minCapacity = True,
-                    pendingBlockings = self._includePendingBlockings )
+            if not rooms:
+                rooms = CrossLocationQueries.getRooms(location=self._roomLocation,
+                                                      freeText=self._freeSearch,
+                                                      ownedBy=self._ownedBy,
+                                                      roomExample=r,
+                                                      resvExample=p,
+                                                      available=available,
+                                                      minCapacity=True,
+                                                      pendingBlockings=self._includePendingBlockings)
 
         rooms.sort()
-
         self._rooms = rooms
-
         self._mapAvailable = Location.getDefaultLocation() and Location.getDefaultLocation().isMapAvailable()
 
-    def _process( self ):
+    def _process(self):
         self._businessLogic()
-        p = roomBooking_wp.WPRoomBookingRoomList( self, self._onlyMy )
+        p = roomBooking_wp.WPRoomBookingRoomList(self, self._onlyMy)
         return p.display()
+
 
 class RHRoomBookingBookingList( RHRoomBookingBase ):
 

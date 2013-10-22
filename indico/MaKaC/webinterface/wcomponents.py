@@ -4009,9 +4009,9 @@ class WRoomBookingMapOfRoomsWidget(WTemplated):
 
 # 2. List of...
 
-class WRoomBookingRoomList( WTemplated ):
+class WRoomBookingRoomList(WTemplated):
 
-    def __init__( self, rh, standalone = False, onlyMy = False ):
+    def __init__(self, rh, standalone=False, onlyMy=False):
         self._rh = rh
         self._standalone = standalone
         self._title = None
@@ -4019,8 +4019,8 @@ class WRoomBookingRoomList( WTemplated ):
         try: self._title = self._rh._title;
         except: pass
 
-    def getVars( self ):
-        vars=WTemplated.getVars( self )
+    def getVars(self):
+        vars = WTemplated.getVars(self)
 
         vars["rooms"] = self._rh._rooms
         vars["mapAvailable"] = self._rh._mapAvailable
@@ -4028,7 +4028,7 @@ class WRoomBookingRoomList( WTemplated ):
         vars["title"] = self._title
         if self._onlyMy:
             vars["noResultsMsg"] = _("You are not the owner of any room")
-        else :
+        else:
             vars["noResultsMsg"] = _("There are no rooms with this search criteria")
 
         if self._standalone:
@@ -4040,6 +4040,7 @@ class WRoomBookingRoomList( WTemplated ):
             vars["bookingFormUH"] = urlHandlers.UHConfModifRoomBookingBookingForm
 
         return vars
+
 
 class WRoomBookingList( WTemplated ):
 

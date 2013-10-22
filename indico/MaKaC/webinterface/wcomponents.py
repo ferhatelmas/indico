@@ -4593,16 +4593,16 @@ class WRoomBookingRoomDetails( WTemplated ):
 
         return vars
 
-class WRoomBookingDetails( WTemplated ):
+class WRoomBookingDetails(WTemplated):
 
-    def __init__(self, rh, conference = None):
+    def __init__(self, rh, conference=None):
         self._rh = rh
         self._resv = rh._resv
         self._conf = conference
         self._standalone = (conference is None)
 
     def getVars( self ):
-        vars=WTemplated.getVars( self )
+        vars = WTemplated.getVars( self )
         vars["standalone"] = self._standalone
         vars["reservation"] = self._resv
         vars["collisions"] = self._rh._collisions
@@ -4621,10 +4621,8 @@ class WRoomBookingDetails( WTemplated ):
             vars["modifyBookingUH"] = urlHandlers.UHConfModifRoomBookingModifyBookingForm
             vars["cloneURL"] = urlHandlers.UHConfModifRoomBookingCloneBooking.getURL(self._resv)
 
-        vars["bookMessage"] = "Book"
         vars["isPreBooking"] = not self._resv.isConfirmed
-        if vars["isPreBooking"]:
-            vars["bookMessage"] = "PRE-Book"
+        vars["bookMessage"] = _("PRE-Booking") if vars["isPreBooking"] else _("Booking")
 
         return vars
 

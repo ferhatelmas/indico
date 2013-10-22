@@ -125,22 +125,21 @@
                 <table width="100%" cellpadding="0" cellspacing="0" class="htab" border="0">
                     <tr>
                         <td class="maincell">
-                            <span class="formTitle" style="border-bottom-width: 0px">${bookMessage}ing (${ reservation.room.name })</span><br /> <!-- PRE-Booking or Booking -->
+                            <span class="formTitle" style="border-bottom-width: 0px">${bookMessage} (${ reservation.room.name })</span><br /> <!-- PRE-Booking or Booking -->
+
+                            <!-- Action result message-->
+                            % if actionSucceeded:
+                                <div class="message success">
+                                    <p>${ title }</p>
+                                    <p>${ description }</p>
+                                </div>
+                            % endif
 
                             <!-- Warning for pre-bookings -->
                             % if isPreBooking:
-                                <br />
-                                <span class="actionFailed">${ _("Beware this booking is not confirmed yet!") }</span>
-                                <br />
+                                <p class="message warning">${ _("Please note that this is a") } <b>${ _("pre-booking") }</b>. ${_("This means that you shouldn't use the room unless you receive the confirmation that it has been accepted.") }</p>
                             % endif
 
-                            % if actionSucceeded:
-                                <br />
-                                <span class="actionSucceeded">${ title }</span>
-                                <p style="margin-left: 6px;">${ description }</p>
-                                <br />
-                            % endif
-                            <br />
                             <table width="90%" align="left" border="0">
                               <!-- ROOM -->
                               <tr>

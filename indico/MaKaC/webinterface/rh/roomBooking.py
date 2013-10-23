@@ -974,69 +974,69 @@ class RHRoomBookingRoomList(RHRoomBookingBase):
         return p.display()
 
 
-class RHRoomBookingBookingList( RHRoomBookingBase ):
+class RHRoomBookingBookingList(RHRoomBookingBase):
 
-    def _checkParams( self, params ):
+    def _checkParams(self, params):
         self._roomGUIDs = []
         self._candResvs = []
         self._allRooms = False
         self._dayLimit = 500
         self._resvLimit = 5000
-        roomGUIDs = params.get( "roomGUID" )
-        if isinstance( roomGUIDs, list ) and 'allRooms' in roomGUIDs:
+        roomGUIDs = params.get("roomGUID")
+        if isinstance(roomGUIDs, list) and 'allRooms' in roomGUIDs:
             roomGUIDs = 'allRooms'
-        if isinstance( roomGUIDs, str ):
+        if isinstance(roomGUIDs, str):
             if roomGUIDs == "allRooms":
                 self._allRooms = True
-                roomGUIDs = [ str(room.guid) for room in CrossLocationQueries.getRooms( allFast = True )]
+                roomGUIDs = [str(room.guid) for room in CrossLocationQueries.getRooms(allFast=True)]
             else:
                 roomGUIDs = [roomGUIDs.strip()]
-        if isinstance( roomGUIDs, list )  and  roomGUIDs != ['']:
+        if isinstance(roomGUIDs, list) and roomGUIDs != ['']:
             self._roomGUIDs = roomGUIDs
 
         resvEx = ReservationBase()
-        self._checkParamsRepeatingPeriod( params )
+        self._checkParamsRepeatingPeriod(params)
         resvEx.startDT = self._startDT
         resvEx.endDT = self._endDT
 
         self._flexibleDatesRange = 0
         flexibleDatesRange = params.get("flexibleDatesRange")
-        if flexibleDatesRange and len(flexibleDatesRange.strip()) > 0:
+        if flexibleDatesRange and flexibleDatesRange.strip():
             if flexibleDatesRange == "None":
                 self._flexibleDatesRange = 0
             else:
                 self._flexibleDatesRange = int(flexibleDatesRange.strip())
 
-        bookedForName = params.get( "bookedForName" )
-        if bookedForName and len( bookedForName.strip() ) > 0:
+        bookedForName = params.get("bookedForName")
+        if bookedForName and bookedForName.strip():
             resvEx.bookedForName = bookedForName.strip()
-        reason = params.get( "reason" )
-        if reason and len( reason.strip() ) > 0:
+        reason = params.get("reason")
+        if reason and reason.strip():
             resvEx.reason = reason.strip()
         self._title = "Bookings"
 
         self._repeatability = None
         repeatability = params.get("repeatability")
-        if repeatability and len( repeatability.strip() ) > 0:
+        if repeatability and repeatability.strip():
             if repeatability == "None":
                 self._repeatability = None
                 resvEx.repeatability = None
             else:
-                self._repeatability = int( repeatability.strip() )
-                resvEx.repeatability = int( repeatability.strip() )
+                self._repeatability = int(repeatability.strip())
+                resvEx.repeatability = int(repeatability.strip())
 
-        onlyPrebookings = params.get( "onlyPrebookings" )
+        onlyPrebookings = params.get("onlyPrebookings")
         self._onlyPrebookings = False
 
-        onlyBookings = params.get( "onlyBookings" )
+        onlyBookings = params.get("onlyBookings")
         self._onlyBookings = False
 
-        if onlyPrebookings and len( onlyPrebookings.strip() ) > 0:
+        if onlyPrebookings and onlyPrebookings.strip():
             if onlyPrebookings == 'on':
                 resvEx.isConfirmed = False
                 self._title = "PRE-" + self._title
                 self._onlyPrebookings = True
-        elif onlyBookings and len( onlyBookings.strip() ) > 0:
+        elif onlyBookings and onlyBookings.strip():
             if onlyBookings == 'on':
                 resvEx.isConfirmed = True
                 self._onlyBookings = True
@@ -1046,20 +1046,20 @@ class RHRoomBookingBookingList( RHRoomBookingBase ):
 
         self._capacity = None
         capacity = params.get("capacity")
-        if capacity and len( capacity.strip() ) > 0:
-            self._capacity = int( capacity.strip() )
+        if capacity and capacity.strip():
+            self._capacity = int(capacity.strip())
 
         self._onlyMy = False
-        onlyMy = params.get( "onlyMy" )
-        if onlyMy and len( onlyMy.strip() ) > 0:
+        onlyMy = params.get("onlyMy")
+        if onlyMy and onlyMy.strip():
             if onlyMy == 'on':
                 self._onlyMy = True
                 self._title = "My " + self._title
         else:
             resvEx.createdBy = None
         self._ofMyRooms = False
-        ofMyRooms = params.get( "ofMyRooms" )
-        if ofMyRooms and len( ofMyRooms.strip() ) > 0:
+        ofMyRooms = params.get("ofMyRooms")
+        if ofMyRooms and ofMyRooms.strip():
             if ofMyRooms == 'on':
                 self._ofMyRooms = True
                 self._title = self._title + " for your rooms"
@@ -1067,80 +1067,83 @@ class RHRoomBookingBookingList( RHRoomBookingBase ):
             self._rooms = None
 
         self._search = False
-        search = params.get( "search" )
-        if search and len( search.strip() ) > 0:
+        search = params.get("search")
+        if search and search.strip():
             if search == 'on':
                 self._search = True
                 self._title = "Search " + self._title
 
-        self._order = params.get( "order", "" )
+        self._order = params.get("order", "")
 
         self._finishDate = False
-        finishDate = params.get( "finishDate" )
-        if finishDate and len( finishDate.strip() ) > 0:
+        finishDate = params.get("finishDate")
+        if finishDate and finishDate.strip():
             if finishDate == 'true':
                 self._finishDate = True
 
         self._newBooking = False
-        newBooking = params.get( "newBooking" )
-        if newBooking and len( newBooking.strip() ) > 0:
+        newBooking = params.get("newBooking")
+        if newBooking and newBooking.strip():
             if newBooking == 'on':
                 self._newBooking = True
                 self._title = "Select a Room"
 
-        isArchival = params.get( "isArchival" )
-        if isArchival and len( isArchival.strip() ) > 0:
+        isArchival = params.get("isArchival")
+        if isArchival and isArchival.strip():
             self._isArchival = True
         else:
             self._isArchival = None
 
         self._autoCriteria = False
-        if params.get( "autoCriteria" ) == "True" or not resvEx.startDT:
+        if params.get("autoCriteria") == "True" or not resvEx.startDT:
             now = datetime.now()
-            after = now + timedelta( 7 ) # 1 week later
+            after = now + timedelta(7) # 1 week later
 
-            resvEx.startDT = datetime( now.year, now.month, now.day, 0, 0, 0 )
-            resvEx.endDT = datetime( after.year, after.month, after.day, 23, 59, 00 )
+            resvEx.startDT = datetime(now.year, now.month, now.day, 0, 0, 0)
+            resvEx.endDT = datetime(after.year, after.month, after.day, 23, 59, 00)
             self._autoCriteria = True
             self._isArchival = None
 
-        isRejected = params.get( "isRejected" )
-        if isRejected and len( isRejected.strip() ) > 0:
+        isRejected = params.get("isRejected")
+        if isRejected and isRejected.strip():
             resvEx.isRejected = isRejected == 'on'
         else:
             resvEx.isRejected = False
-        isCancelled = params.get( "isCancelled" )
-        if isCancelled and len( isCancelled.strip() ) > 0:
+
+        isCancelled = params.get("isCancelled")
+        if isCancelled and isCancelled.strip():
             resvEx.isCancelled = isCancelled == 'on'
         else:
             resvEx.isCancelled = False
 
-
-        needsAVCSupport = params.get( "needsAVCSupport" )
-        if needsAVCSupport and len( needsAVCSupport.strip() ) > 0:
+        needsAVCSupport = params.get("needsAVCSupport")
+        if needsAVCSupport and needsAVCSupport.strip():
             resvEx.needsAVCSupport = needsAVCSupport == 'on'
         else:
             resvEx.needsAVCSupport = None
 
-        usesAVC = params.get( "usesAVC" )
-        if usesAVC and len( usesAVC.strip() ) > 0:
+        usesAVC = params.get("usesAVC")
+        if usesAVC and usesAVC.strip():
             resvEx.usesAVC = usesAVC == 'on'
         else:
             resvEx.usesAVC = None
 
-        needsAssistance = params.get( "needsAssistance" )
-        if needsAssistance and len( needsAssistance.strip() ) > 0:
+        needsAssistance = params.get("needsAssistance")
+        if needsAssistance and needsAssistance.strip():
             resvEx.needsAssistance = needsAssistance == 'on'
         else:
             resvEx.needsAssistance = None
 
-        isHeavy = params.get( "isHeavy" )
-        if isHeavy and len( isHeavy.strip() ) > 0:
+        isHeavy = params.get("isHeavy")
+        if isHeavy and isHeavy.strip():
             self._isHeavy = True
         else:
             self._isHeavy = None
 
-        #self._overload stores type of overload 0 - no overload 1 - too long period selected 2 - too many bookings fetched
+        #self._overload stores type of overload
+        # 0 - no overload
+        # 1 - too long period selected
+        # 2 - too many bookings fetched
         self._overload = 0
         if resvEx.startDT and resvEx.endDT:
             if (resvEx.endDT - resvEx.startDT).days > self._dayLimit:
@@ -1148,14 +1151,14 @@ class RHRoomBookingBookingList( RHRoomBookingBase ):
             elif self._newBooking:
                 for rg in self._roomGUIDs:
                     if self._repeatability == 0:
-                        self._candResvs.append(self._loadResvBookingCandidateFromSession( params, RoomGUID.parse( rg ).getRoom() ))
+                        self._candResvs.append(self._loadResvBookingCandidateFromSession(params, RoomGUID.parse(rg).getRoom()))
                     else:
-                        candResv = self._loadResvBookingCandidateFromSession( params, RoomGUID.parse( rg ).getRoom() )
+                        candResv = self._loadResvBookingCandidateFromSession(params, RoomGUID.parse(rg).getRoom())
                         candResv.startDT = self._startDT
                         candResv.endDT = self._endDT - timedelta(2 * self._flexibleDatesRange)
                         self._candResvs.append(candResv)
                         for i in range(2 * self._flexibleDatesRange):
-                            candResv = self._loadResvBookingCandidateFromSession( params, RoomGUID.parse( rg ).getRoom() )
+                            candResv = self._loadResvBookingCandidateFromSession(params, RoomGUID.parse(rg).getRoom())
                             candResv.startDT = self._startDT + timedelta(i + 1)
                             candResv.endDT = self._endDT - timedelta(2 * self._flexibleDatesRange - i - 1)
                             self._candResvs.append(candResv)
@@ -1168,14 +1171,14 @@ class RHRoomBookingBookingList( RHRoomBookingBase ):
         self._description = session.pop('rbDescription', None)
         self._resvEx = resvEx
 
-    def _process( self ):
+    def _process(self):
         # Init
         self._resvs = []
         self._dayBars = {}
 
         # The following can't be done in checkParams since it must be after checkProtection
         if self._onlyMy:
-            self._resvEx.createdBy = str( self._getUser().id )
+            self._resvEx.createdBy = str(self._getUser().id)
         if self._ofMyRooms:
             self._rooms = self._getUser().getRooms()
             self._roomGUIDs = None
@@ -1206,21 +1209,21 @@ class RHRoomBookingBookingList( RHRoomBookingBase ):
         self._cache = None
         self._updateCache = False
 
-        if self._overload != 0:
-            p = roomBooking_wp.WPRoomBookingBookingList( self )
+        if self._overload:
+            p = roomBooking_wp.WPRoomBookingBookingList(self)
             return p.display()
 
         if self._roomGUIDs:
-            rooms = [ RoomGUID.parse( rg ).getRoom() for rg in self._roomGUIDs ]
+            rooms = [RoomGUID.parse(rg).getRoom() for rg in self._roomGUIDs]
             if self._rooms is list:
-                self._rooms.extend( rooms )
+                self._rooms.extend(rooms)
             else:
                 self._rooms = rooms
 
         # Prepare 'days' so .getReservations will use days index
         if not self._resvEx.repeatability:
             self._resvEx.repeatability = RepeatabilityEnum.daily
-        periods = self._resvEx.splitToPeriods(endDT = self._resvEx.endDT)
+        periods = self._resvEx.splitToPeriods(endDT=self._resvEx.endDT)
         if self._flexibleDatesRange:
             startDate = self._startDT + timedelta(self._flexibleDatesRange)
             endDate = self._endDT - timedelta(self._flexibleDatesRange)
@@ -1233,12 +1236,12 @@ class RHRoomBookingBookingList( RHRoomBookingBase ):
                 periods.extend(self._resvEx.splitToPeriods())
             self._resvEx.startDT = self._startDT
             self._resvEx.endDT = self._endDT
-        days = [ period.startDT.date() for period in periods ]
+        days = [period.startDT.date() for period in periods]
 
         if self._useCache:
             self._cache = GenericCache('RoomBookingCalendar')
             self._dayBars = dict((day, bar) for day, bar in self._cache.get_multi(map(str, days)).iteritems() if bar)
-            dayMap = dict(((str(day), day) for day in days))
+            dayMap = dict((str(day), day) for day in days)
             for day in self._dayBars.iterkeys():
                 days.remove(dayMap[day])
             self._updateCache = bool(len(days))
@@ -1246,14 +1249,20 @@ class RHRoomBookingBookingList( RHRoomBookingBase ):
         day = None # Ugly but...othery way to avoid it?
         for day in days:
             for loc in Location.allLocations:
-                self._resvs += CrossLocationQueries.getReservations( location = loc.friendlyName, resvExample = self._resvEx, rooms = self._rooms, archival = self._isArchival, heavy = self._isHeavy, repeatability=self._repeatability,  days = [day] )
+                self._resvs += CrossLocationQueries.getReservations(location=loc.friendlyName,
+                                                                    resvExample=self._resvEx,
+                                                                    rooms=self._rooms,
+                                                                    archival=self._isArchival,
+                                                                    heavy=self._isHeavy,
+                                                                    repeatability=self._repeatability,
+                                                                    days=[day])
             if len(self._resvs) > self._resvLimit:
                 self._overload = 2
                 break
         if day:
-            self._resvEx.endDT = datetime( day.year, day.month, day.day, 23, 59, 00 )
+            self._resvEx.endDT = datetime(day.year, day.month, day.day, 23, 59, 00)
 
-        p = roomBooking_wp.WPRoomBookingBookingList( self )
+        p = roomBooking_wp.WPRoomBookingBookingList(self)
         return p.display()
 
 

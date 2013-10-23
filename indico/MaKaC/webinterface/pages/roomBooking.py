@@ -303,15 +303,14 @@ class WPRoomBookingRoomList(WPRoomBookingBase):
         return wc.getHTML(params)
 
 
-class WPRoomBookingBookingList( WPRoomBookingBase ):
+class WPRoomBookingBookingList(WPRoomBookingBase):
 
-    def __init__( self, rh, today=False, onlyMy=False, onlyPrebookings=False, onlyMyRooms=False ):
+    def __init__(self, rh, today=False, onlyMy=False, onlyPrebookings=False, onlyMyRooms=False):
         self._rh = rh
-        WPRoomBookingBase.__init__( self, rh )
+        WPRoomBookingBase.__init__(self, rh)
 
     def getJSFiles(self):
-        return WPRoomBookingBase.getJSFiles(self) + \
-            self._includeJSPackage('RoomBooking')
+        return WPRoomBookingBase.getJSFiles(self) + self._includeJSPackage('RoomBooking')
 
     def _getTitle(self):
         if self._rh._today:
@@ -327,7 +326,7 @@ class WPRoomBookingBookingList( WPRoomBookingBase ):
         else:
             return WPRoomBookingBase._getTitle(self) + " - " + _("Found bookings")
 
-    def _setCurrentMenuItem( self ):
+    def _setCurrentMenuItem(self):
         if self._rh._today or self._rh._allRooms:
             self._bookingListCalendarOpt.setActive(True)
         elif self._rh._onlyMy and self._rh._onlyPrebookings:
@@ -341,9 +340,9 @@ class WPRoomBookingBookingList( WPRoomBookingBase ):
         else:
             self._bookRoomNewOpt.setActive(True)
 
-    def _getBody( self, pars ):
-        wc = wcomponents.WRoomBookingBookingList( self._rh )
-        return wc.getHTML( pars )
+    def _getBody(self, pars):
+        wc = wcomponents.WRoomBookingBookingList(self._rh)
+        return wc.getHTML(pars)
 
 
 # 3. Details of...

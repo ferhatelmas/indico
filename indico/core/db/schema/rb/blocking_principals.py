@@ -16,3 +16,24 @@
 ##
 ## You should have received a copy of the GNU General Public License
 ## along with Indico;if not, see <http://www.gnu.org/licenses/>.
+
+"""
+Schema of a principal (user or group that isn't affected by blocking)
+"""
+
+from sqlalchemy import Column, ForeignKey, Integer, String
+
+from indico.core.db.schema import Base
+
+
+class BlockingPrincipal(Base):
+    __tablename__ = 'blocking_principals'
+
+    blocking_id = Column(Integer, ForeignKey('blockings.id'), primary_key=True)
+    entity_type = Column(String, primary_key=True)
+    entity_id = Column(String, primary_key=True)
+
+    def __repr__(self):
+        return '<BlockingPrincipal({0}, {1}, {2})>'.format(self.blocking_id,
+                                                           self.entity_id,
+                                                           self.entity_type)

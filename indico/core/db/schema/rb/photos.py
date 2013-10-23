@@ -16,3 +16,22 @@
 ##
 ## You should have received a copy of the GNU General Public License
 ## along with Indico;if not, see <http://www.gnu.org/licenses/>.
+
+"""
+Schema of a photo for rooms
+"""
+
+from sqlalchemy import Column, ForeignKey, Integer, LargeBinary
+
+from indico.core.db.schema import Base
+
+
+class Photo(Base):
+    __tablename__ = 'photos'
+
+    id = Column(Integer, primary_key=True)
+    room_id = Column(Integer, ForeignKey('rooms.id'))
+    content = Column(LargeBinary)  # or path, url = Column(String)
+
+    def __repr__(self):
+        return '<Photo({0}, {1})>'.format(self.id, self.room_id)

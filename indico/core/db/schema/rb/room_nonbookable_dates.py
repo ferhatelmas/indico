@@ -16,3 +16,25 @@
 ##
 ## You should have received a copy of the GNU General Public License
 ## along with Indico;if not, see <http://www.gnu.org/licenses/>.
+
+"""
+Nonbookable dates of rooms
+"""
+
+from sqlalchemy import Column, DateTime, ForeignKey, Integer
+
+from indico.core.db.schema import Base
+
+
+class NonBookableDate(Base):
+    __tablename__ = 'room_nonbookable_dates'
+
+    start_date = Column(DateTime, nullable=False, primary_key=True)
+    end_date = Column(DateTime, nullable=False, primary_key=True)
+
+    room_id = Column(Integer, ForeignKey('rooms.id'), primary_key=True)
+
+    def __repr__(self):
+        return '<NonBookableDate({0}, {1}, {2})>'.format(self.room_id,
+                                                         self.start_date,
+                                                         self.end_date)

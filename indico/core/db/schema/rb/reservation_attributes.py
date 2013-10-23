@@ -16,3 +16,25 @@
 ##
 ## You should have received a copy of the GNU General Public License
 ## along with Indico;if not, see <http://www.gnu.org/licenses/>.
+
+"""
+Custom attributes for reservations
+"""
+
+from sqlalchemy import Column, ForeignKey, Integer, String
+
+from indico.core.db.schema import Base
+
+
+class ReservationAttribute(Base):
+    __tablename__ = 'reservation_attributes'
+
+    key = Column(String, nullable=False, primary_key=True)
+    value = Column(String, nullable=False)
+
+    reservation_id = Column(Integer, ForeignKey('reservations.id'), primary_key=True)
+
+    def __repr__(self):
+        return '<ReservationAttribute({0}, {1}, {2})>'.format(self.reservation_id,
+                                                              self.key,
+                                                              self.value)

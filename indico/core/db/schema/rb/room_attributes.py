@@ -16,3 +16,25 @@
 ##
 ## You should have received a copy of the GNU General Public License
 ## along with Indico;if not, see <http://www.gnu.org/licenses/>.
+
+"""
+Custom attributes for rooms
+"""
+
+from sqlalchemy import Column, ForeignKey, Integer, String
+
+from indico.core.db.schema import Base
+
+
+class RoomAttribute(Base):
+    __tablename__ = 'room_attributes'
+
+    key = Column(String, nullable=False, primary_key=True)
+    value = Column(String, nullable=False)
+
+    room_id = Column(Integer, ForeignKey('rooms.id'), primary_key=True)
+
+    def __repr__(self):
+        return '<RoomAttribute({0}, {1}, {2})>'.format(self.room_id,
+                                                       self.key,
+                                                       self.value)

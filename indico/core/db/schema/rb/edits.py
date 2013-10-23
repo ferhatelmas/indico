@@ -16,3 +16,24 @@
 ##
 ## You should have received a copy of the GNU General Public License
 ## along with Indico;if not, see <http://www.gnu.org/licenses/>.
+
+"""
+Schema of modifications done on a reservation
+"""
+
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+
+from indico.core.db.schema import Base
+
+
+class Edit(Base):
+    __tablename__ = 'reservation_edits'
+
+    timestamp = Column(DateTime, primary_key=True)
+    info = Column(String, nullable=False)
+    avatar_id = Column(String, nullable=False, primary_key=True)
+    reservation_id = Column(Integer, ForeignKey('reservations.id'), primary_key=True)
+
+    def __repr__(self):
+        return '<Edit({0}, {1}, {2}, {3})>'.format(self.avatar_id, self.reservation_id,
+                                                   self.timestamp, self.info)

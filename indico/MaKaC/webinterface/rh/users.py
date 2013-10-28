@@ -441,34 +441,34 @@ class RHUserIdPerformCreation( RHUserIdentityBase ):
         self._redirect( urlHandlers.UHUserDetails.getURL( self._avatar ) ) #to set to the returnURL
 
 
-class RHUserIdentityChangePassword( RHUserIdentityBase ):
+class RHUserIdentityChangePassword(RHUserIdentityBase):
     _uh = urlHandlers.UHUserIdentityChangePassword
 
-    def _checkParams( self, params ):
-        RHUserIdentityBase._checkParams( self, params )
+    def _checkParams(self, params):
+        RHUserIdentityBase._checkParams(self, params)
         self._params = params
 
     def _process(self):
-        if self._params.get("OK") is not None:
-            if self._params.get("password","") == "" or self._params.get("passwordBis","") == "" :
+        if self._params.get("OK"):
+            if self._params.get("password", "") == "" or self._params.get("passwordBis", "") == "":
                 self._params["msg"] = _("Both password and password confirmation fields must be filled up")
                 del self._params["OK"]
-                p = adminPages.WPIdentityChangePassword( self, self._avatar, self._params )
+                p = adminPages.WPIdentityChangePassword(self, self._avatar, self._params)
                 return p.display()
-            if self._params.get("password","") != self._params.get("passwordBis","") :
+            if self._params.get("password", "") != self._params.get("passwordBis", ""):
                 self._params["msg"] = _("Password and password confirmation are not equal")
                 del self._params["OK"]
-                p = adminPages.WPIdentityChangePassword( self, self._avatar, self._params )
+                p = adminPages.WPIdentityChangePassword(self, self._avatar, self._params)
                 return p.display()
             identity = self._avatar.getIdentityById(self._params["login"], "Local")
             if not identity:
                 self._params["msg"] = _("You can NOT change others' passwords")
                 del self._params["OK"]
-                p = adminPages.WPIdentityChangePassword( self, self._avatar, self._params )
+                p = adminPages.WPIdentityChangePassword(self, self._avatar, self._params)
                 return p.display()
             identity.setPassword(self._params["password"])
             self._redirect(urlHandlers.UHUserDetails.getURL(self._avatar))
-        elif self._params.get("Cancel") is not None:
+        elif self._params.get("Cancel"):
             self._redirect(urlHandlers.UHUserDetails.getURL(self._avatar))
         else:
             self._params["msg"] = ""

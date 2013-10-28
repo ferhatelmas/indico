@@ -129,15 +129,15 @@
 
                             <!-- Action result message-->
                             % if actionSucceeded:
-                                <div class="message success">
-                                    <p>${ title }</p>
-                                    <p>${ description }</p>
+                                <div class="success-message-box">
+                                    <p class="successMessage">${ title }</p>
+                                    <p class="warningMessage">${ description }</p>
                                 </div>
                             % endif
 
                             <!-- Warning for pre-bookings -->
-                            % if isPreBooking:
-                                <p class="message warning">${ _("Please note that this is a") } <b>${ _("pre-booking") }</b>. ${_("This means that you shouldn't use the room unless you receive the confirmation that it has been accepted.") }</p>
+                            % if isPreBooking and not actionSucceeded:
+                                <p class="warningMessage">${ _("Please note that this is a") } <b>${ _("pre-booking") }</b>. ${_("This means that you shouldn't use the room unless you receive the confirmation that it has been accepted.") }</p>
                             % endif
 
                             <table width="90%" align="left" border="0">

@@ -4764,7 +4764,7 @@ class WRoomBookingRoomForm( WTemplated ):
         nbd = candRoom.getNonBookableDates()
         if len(nbd) == 0:
             from MaKaC.plugins.RoomBooking.default.room import NonBookableDate
-            nbd = [NonBookableDate(None, None)]
+            nbd = [NonBookableDate(None, None, None)]
         vars["nonBookableDates"] = nbd
 
         nbp = candRoom.getDailyBookablePeriods()

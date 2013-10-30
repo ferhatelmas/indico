@@ -263,6 +263,8 @@
                                                 <table id="nonBookablePeriodsTable">
                                                     % for i in range(len(nonBookableDates)):
                                                     <tr class="startEndDate">
+                                                        <td class="startEndDateEntry">${ _("reason") }:</td>
+                                                        <td><input id="reason${i}"type="text" name="reason${i}"/></td>
                                                         <td class="startEndDateEntry">${ _("from") }:</td>
                                                         <td><span id="startDateNonBookablePeriod${i}"></span></td>
                                                         <td class="startEndDateEntry">${ _("to") }:</td>
@@ -383,6 +385,7 @@
         $E('startDateNonBookablePeriod${i}').set(startDateField);
         $E('endDateNonBookablePeriod${i}').set(endDateField);
 
+        $('#reason${i}').val('${ nonBookableDates[i].getReason() if nonBookableDates[i].getReason() else "" }')
         startDateField.set('${nonBookableDates[i].getStartDate().strftime("%d/%m/%Y %H:%M") if nonBookableDates[i].getStartDate() else ""}')
         endDateField.set('${nonBookableDates[i].getEndDate().strftime("%d/%m/%Y %H:%M") if nonBookableDates[i].getEndDate() else ""}')
     % endfor
@@ -399,7 +402,7 @@
     });
 
     function addNonBookablePeriod(){
-        $("#nonBookablePeriodsTable tr:last").after('<tr class="startEndDate"><td class="startEndDateEntry">${ _("from") }:</td><td><span id="startDateNonBookablePeriod' + nonBookablePeriodCounter + '"></span></td><td class="startEndDateEntry">${ _("to") }:</td><td><span id="endDateNonBookablePeriod' + nonBookablePeriodCounter +'"></span></td></tr>');
+        $("#nonBookablePeriodsTable tr:last").after('<tr class="startEndDate"><td class="startEndDateEntry">${ _("reason") }:</td><td><input id="' + nonBookablePeriodCounter + '" type="text" name="reason' + nonBookablePeriodCounter + '"/></td><td class="startEndDateEntry">${ _("from") }:</td><td><span id="startDateNonBookablePeriod' + nonBookablePeriodCounter + '"></span></td><td class="startEndDateEntry">${ _("to") }:</td><td><span id="endDateNonBookablePeriod' + nonBookablePeriodCounter +'"></span></td></tr>');
 
         $E('startDateNonBookablePeriod' + nonBookablePeriodCounter).set(IndicoUI.Widgets.Generic.dateField(true, {id:'startDateNonBookablePeriod' + nonBookablePeriodCounter, name:'startDateNonBookablePeriod' + nonBookablePeriodCounter}));
         $E('endDateNonBookablePeriod' + nonBookablePeriodCounter).set(IndicoUI.Widgets.Generic.dateField(true, {id:'endDateNonBookablePeriod' + nonBookablePeriodCounter, name:'endDateNonBookablePeriod' + nonBookablePeriodCounter}));

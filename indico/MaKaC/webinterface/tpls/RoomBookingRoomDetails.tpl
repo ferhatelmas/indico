@@ -167,7 +167,16 @@
                                             <td class="subFieldWidth" align="right" valign="top"> ${ _("Unavailable periods")}&nbsp;&nbsp;</td>
                                             <td align="left" class="blacktext">
                                             % if room.getNonBookableDates():
-                                                <ul><li>${ "</li><li>".join(map(lambda x: 'from %s to %s'%(x.getStartDate().strftime('%d/%m/%Y'), x.getEndDate().strftime('%d/%m/%Y')), room.getNonBookableDates() )) }</li></ul>
+                                                <ul>
+                                                    % for nonBookableDate in room.getNonBookableDates():
+                                                    <li>
+                                                        from ${ nonBookableDate.getStartDate().strftime('%d/%m/%Y') } to ${ nonBookableDate.getEndDate().strftime('%d/%m/%Y') }
+                                                        % if nonBookableDate.getReason():
+                                                            (${ nonBookableDate.getReason() })
+                                                        % endif
+                                                    </li>
+                                                    % endfor
+                                                </ul>
                                             % endif
                                             </td>
                                         </tr>

@@ -392,23 +392,31 @@ class RHRoomBookingBase( RoomBookingAvailabilityParamsMixin, RoomBookingDBMixin,
         candRoom.clearNonBookableDates()
         candRoom.clearDailyBookablePeriods()
 
-        for periodNumber in range(int(params.get("nonBookablePeriodCounter"))):
-            if params.get("startDateNonBookablePeriod" + str(periodNumber)):
-                # adding formated data to be compatible with the old DB version
-                try:
-                    candRoom.addNonBookableDates(datetime.strptime(params.get("startDateNonBookablePeriod" + str(periodNumber)), '%d/%m/%Y %H:%M'),
-                                             datetime.strptime(params.get("endDateNonBookablePeriod" + str(periodNumber)), '%d/%m/%Y %H:%M'))
-                except ValueError:
-                    continue
+        try:
+            for periodNumber in xrange(int(params.get("nonBookablePeriodCounter"))):
+                periodNumber = str(periodNumber)
+                if params.get("startDateNonBookablePeriod" + periodNumber):
+                    # adding formated data to be compatible with the old DB version
+                    try:
+                        candRoom.addNonBookableDates(datetime.strptime(params.get("startDateNonBookablePeriod" + periodNumber), '%d/%m/%Y %H:%M'),
+                                                     datetime.strptime(params.get("endDateNonBookablePeriod" + periodNumber), '%d/%m/%Y %H:%M'),
+                                                     params.get("reason" + periodNumber))
+                    except ValueError:
+                        continue
+        except ValueError:
+            pass
 
-        for periodNumber in range(int(params.get("dailyBookablePeriodCounter"))):
-            if params.get("startTimeDailyBookablePeriod" + str(periodNumber)):
-                try:
-                    cStartTime = datetime.strptime(params.get("startTimeDailyBookablePeriod" + str(periodNumber)), "%H:%M")
-                    cEndTime = datetime.strptime(params.get("endTimeDailyBookablePeriod" + str(periodNumber)), "%H:%M")
-                    candRoom.addDailyBookablePeriod(cStartTime.strftime("%H:%M"), cEndTime.strftime("%H:%M"))
-                except ValueError:
-                    continue
+        try:
+            for periodNumber in xrange(int(params.get("dailyBookablePeriodCounter"))):
+                if params.get("startTimeDailyBookablePeriod" + str(periodNumber)):
+                    try:
+                        cStartTime = datetime.strptime(params.get("startTimeDailyBookablePeriod" + str(periodNumber)), "%H:%M")
+                        cEndTime = datetime.strptime(params.get("endTimeDailyBookablePeriod" + str(periodNumber)), "%H:%M")
+                        candRoom.addDailyBookablePeriod(cStartTime.strftime("%H:%M"), cEndTime.strftime("%H:%M"))
+                    except ValueError:
+                        continue
+        except ValueError:
+            pass
 
         eqList = []
         vcList = []

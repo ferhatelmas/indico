@@ -90,8 +90,8 @@ class Room( Persistent, RoomBase, Fossilizable ):
             return [d for d in self._nonBookableDates if not d.isPast()]
         return self._nonBookableDates
 
-    def addNonBookableDates(self, startDate, endDate):
-        nbd = NonBookableDate(startDate, endDate)
+    def addNonBookableDates(self, startDate, endDate, reason=''):
+        nbd = NonBookableDate(startDate, endDate, reason)
         self._nonBookableDates.append(nbd)
         self._p_changed = 1
 
@@ -510,45 +510,48 @@ class Room( Persistent, RoomBase, Fossilizable ):
 
     locationName = property( getLocationName, setLocationName )
 
+
 class NonBookableDate(Persistent):
 
-    def __init__(self, startDate, endDate):
+    def __init__(self, startDate, endDate, reason):
         self.setStartDate(startDate)
         self.setEndDate(endDate)
+        self.setReason(reason)
 
     def toDict(self):
-        return {"startDate": self._startDate,
-                "endDate": self._endDate}
+        return {'startDate': self._startDate,
+                'endDate': self._endDate,
+                'reason': self._reason}
 
     def saveFromDict(self, data):
-        self.setStartDate(data["startDate"])
-        self.setEndDate(data["endDate"])
+        self.setStartDate(data['startDate'])
+        self.setEndDate(data['endDate'])
+        self.setReason(data.get('reason', ''))
 
     def getStartDate(self):
         return self._startDate
 
     def setStartDate(self, startDate):
-        if startDate is None:
-            self._startDate = None
-        else:
-            self._startDate = startDate
+        self._startDate = startDate
 
     def getEndDate(self):
         return self._endDate
 
     def setEndDate(self, endDate):
-        if endDate is None:
-            self._endDate = None
-        else:
-            self._endDate = endDate
+        self._endDate = endDate
+
+    def getReason(self):
+        return self._reason
+
+    def setReason(self, reason):
+        self._reason = reason
 
     def doesPeriodOverlap(self, startDate, endDate):
-        if self.getEndDate() <= startDate or endDate <= self.getStartDate():
-            return False
-        return True
+        return self.getEndDate() <= startDate or endDate <= self.getStartDate()
 
     def isPast(self):
         return self.getEndDate() <= datetime.datetime.now()
+
 
 class DailyBookablePeriod(Persistent):
 

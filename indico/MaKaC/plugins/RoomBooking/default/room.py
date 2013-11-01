@@ -547,7 +547,7 @@ class NonBookableDate(Persistent):
         self._reason = reason
 
     def doesPeriodOverlap(self, startDate, endDate):
-        return self.getEndDate() <= startDate or endDate <= self.getStartDate()
+        return not(self.getEndDate() <= startDate or endDate <= self.getStartDate())
 
     def isPast(self):
         return self.getEndDate() <= datetime.datetime.now()

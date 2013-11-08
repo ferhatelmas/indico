@@ -16,3 +16,20 @@
 ##
 ## You should have received a copy of the GNU General Public License
 ## along with Indico;if not, see <http://www.gnu.org/licenses/>.
+
+import glob
+import importlib
+import os
+
+from flask.ext.sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
+
+
+def load(package):
+    for f in glob.glob(os.path.dirname(__file__) + '/{0}/*.py'.format(package)):
+        importlib.import_module('.' + os.path.basename(f)[:-3], __package__ + '.' + package)
+
+
+def load_room_booking():
+    load('rb')

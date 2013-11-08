@@ -17,30 +17,22 @@
 ## You should have received a copy of the GNU General Public License
 ## along with Indico;if not, see <http://www.gnu.org/licenses/>.
 
-
-from MaKaC.common import DBMgr
-from MaKaC import user
-from MaKaC.common.indexes import IndexesHolder
-
-
 """
-Generates a file with all the avatars that are not well indexed by name.
+Available times to book for rooms
 """
 
-DBMgr.getInstance().startRequest()
-error = False
-ah = user.AvatarHolder()
-ni=IndexesHolder()._getIdx()["name"]
-log = file('names_ids.txt','w')
-lines = []
-for uid, user in ah._getIdx().iteritems():
-    for word in ni._words:
-        if uid in ni._words[word] and word != user.getName():
-            lines.append(uid + "-" + user.getName() + "-" + word)
-log.writelines("\n".join(lines))
-log.close()
-if not error:
-    DBMgr.getInstance().endRequest()
-    print "No error. The change are saved"
-else:
-    print "There were errors. The changes was not saved"
+from indico.core.db import db
+
+
+class BookableTime(db.Model):
+    __tablename__ = 'room_bookable_times'
+
+    start_time = db.Column(db.Time, nullable=False, primary_key=True)
+    end_time = db.Column(db.Time, nullable=False, primary_key=True)
+
+    room_id = db.Column(db.Integer, db.ForeignKey('rooms.id'), primary_key=True, nullable=False)
+
+    def __repr__(self):
+        return '<BookableTime({0}, {1}, {2})>'.format(self.room_id,
+                                                      self.start_time,
+                                                      self.end_time)

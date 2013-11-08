@@ -17,30 +17,22 @@
 ## You should have received a copy of the GNU General Public License
 ## along with Indico;if not, see <http://www.gnu.org/licenses/>.
 
-
-from MaKaC.common import DBMgr
-from MaKaC import user
-from MaKaC.common.indexes import IndexesHolder
-
-
 """
-Generates a file with all the avatars that are not well indexed by name.
+Dates to skip in a reservation
 """
 
-DBMgr.getInstance().startRequest()
-error = False
-ah = user.AvatarHolder()
-ni=IndexesHolder()._getIdx()["name"]
-log = file('names_ids.txt','w')
-lines = []
-for uid, user in ah._getIdx().iteritems():
-    for word in ni._words:
-        if uid in ni._words[word] and word != user.getName():
-            lines.append(uid + "-" + user.getName() + "-" + word)
-log.writelines("\n".join(lines))
-log.close()
-if not error:
-    DBMgr.getInstance().endRequest()
-    print "No error. The change are saved"
-else:
-    print "There were errors. The changes was not saved"
+from indico.core.db import db
+
+
+class ExcludedDay(db.Model):
+    __tablename__ = 'reservation_excluded_days'
+
+    start_date = db.Column(db.DateTime, nullable=False, primary_key=True)
+    end_date = db.Column(db.DateTime, nullable=False, primary_key=True)
+
+    reservation_id = db.Column(db.Integer, db.ForeignKey('reservations.id'), nullable=False)
+
+    def __repr__(self):
+        return '<ExcludedDay({0}, {1}, {2})>'.format(self.reservation_id,
+                                                     self.start_date,
+                                                     self.end_date)

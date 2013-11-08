@@ -17,30 +17,16 @@
 ## You should have received a copy of the GNU General Public License
 ## along with Indico;if not, see <http://www.gnu.org/licenses/>.
 
+from indico.core.db import db
+from indico.core.db.rb.room_attribute_keys import RoomAttributeKey
+from indico.tests.python.unit.indico_tests.core_tests.db_tests.db import DBTest
 
-from MaKaC.common import DBMgr
-from MaKaC import user
-from MaKaC.common.indexes import IndexesHolder
 
+class TestRoomAttributeKey(DBTest):
 
-"""
-Generates a file with all the avatars that are not well indexed by name.
-"""
+    def testDummy(self):
+        k = RoomAttributeKey('test_key')
+        db.session.add(k)
+        db.session.commit()
 
-DBMgr.getInstance().startRequest()
-error = False
-ah = user.AvatarHolder()
-ni=IndexesHolder()._getIdx()["name"]
-log = file('names_ids.txt','w')
-lines = []
-for uid, user in ah._getIdx().iteritems():
-    for word in ni._words:
-        if uid in ni._words[word] and word != user.getName():
-            lines.append(uid + "-" + user.getName() + "-" + word)
-log.writelines("\n".join(lines))
-log.close()
-if not error:
-    DBMgr.getInstance().endRequest()
-    print "No error. The change are saved"
-else:
-    print "There were errors. The changes was not saved"
+        self.assertTrue('test_key' in RoomAttributeKey.getAllKeyNames())

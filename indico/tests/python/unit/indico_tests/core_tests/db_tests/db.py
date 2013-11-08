@@ -17,30 +17,26 @@
 ## You should have received a copy of the GNU General Public License
 ## along with Indico;if not, see <http://www.gnu.org/licenses/>.
 
+from flask.ext.testing import TestCase
 
-from MaKaC.common import DBMgr
-from MaKaC import user
-from MaKaC.common.indexes import IndexesHolder
+from indico.core.db import db, load_room_booking
+from indico.web.flask.app import make_app
 
 
-"""
-Generates a file with all the avatars that are not well indexed by name.
-"""
+class DBTest(TestCase):
 
-DBMgr.getInstance().startRequest()
-error = False
-ah = user.AvatarHolder()
-ni=IndexesHolder()._getIdx()["name"]
-log = file('names_ids.txt','w')
-lines = []
-for uid, user in ah._getIdx().iteritems():
-    for word in ni._words:
-        if uid in ni._words[word] and word != user.getName():
-            lines.append(uid + "-" + user.getName() + "-" + word)
-log.writelines("\n".join(lines))
-log.close()
-if not error:
-    DBMgr.getInstance().endRequest()
-    print "No error. The change are saved"
-else:
-    print "There were errors. The changes was not saved"
+    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    TESTING = True
+
+    def create_app(self):
+        app = make_app()
+        db.init_app(app)
+        return app
+
+    def setUp(self):
+        load_room_booking()
+        db.create_all()
+
+    def tearDown(self):
+        db.session.remove()
+        db.drop_all()

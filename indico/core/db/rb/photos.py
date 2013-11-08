@@ -17,30 +17,20 @@
 ## You should have received a copy of the GNU General Public License
 ## along with Indico;if not, see <http://www.gnu.org/licenses/>.
 
-
-from MaKaC.common import DBMgr
-from MaKaC import user
-from MaKaC.common.indexes import IndexesHolder
-
-
 """
-Generates a file with all the avatars that are not well indexed by name.
+Schema of a photo for rooms
 """
 
-DBMgr.getInstance().startRequest()
-error = False
-ah = user.AvatarHolder()
-ni=IndexesHolder()._getIdx()["name"]
-log = file('names_ids.txt','w')
-lines = []
-for uid, user in ah._getIdx().iteritems():
-    for word in ni._words:
-        if uid in ni._words[word] and word != user.getName():
-            lines.append(uid + "-" + user.getName() + "-" + word)
-log.writelines("\n".join(lines))
-log.close()
-if not error:
-    DBMgr.getInstance().endRequest()
-    print "No error. The change are saved"
-else:
-    print "There were errors. The changes was not saved"
+from indico.core.db import db
+
+
+class Photo(db.Model):
+    __tablename__ = 'photos'
+
+    id = db.Column(db.Integer, primary_key=True)
+    room_id = db.Column(db.Integer, db.ForeignKey('rooms.id'), nullable=False)
+    small_content = db.Column(db.LargeBinary, nullable=False)
+    large_content = db.Column(db.LargeBinary, nullable=False)  # or path, url = Column(String)
+
+    def __repr__(self):
+        return '<Photo({0}, {1})>'.format(self.id, self.room_id)

@@ -27,11 +27,13 @@ from werkzeug.exceptions import NotFound
 from werkzeug.urls import url_parse
 
 from indico.core.config import Config
+from MaKaC.common.info import HelperMaKaCInfo
 from MaKaC.common.logger import Logger
 from MaKaC.i18n import _
 from MaKaC.plugins.base import RHMapMemory
 from MaKaC.webinterface.pages.error import WErrorWSGI
 
+from indico.core.db import db
 from indico.web.flask.util import XAccelMiddleware, make_compat_blueprint, ListConverter
 from indico.web.flask.wrappers import IndicoFlask
 from indico.web.flask.blueprints.legacy import legacy
@@ -92,6 +94,33 @@ def configure_app(app, set_path=False):
             app.wsgi_app = XAccelMiddleware(app.wsgi_app, args)
         else:
             raise ValueError('Invalid static file method: %s' % method)
+
+
+def configure_db(app):
+    cfg = Config.getInstance()
+    app.config['SQLALCHEMY_DATABASE_URI'] = cfg.getSqlalchemyDatabaseUri()
+
+    # options to care
+    app.config['SQLALCHEMY_ECHO'] = cfg.getSqalchemyEcho()
+    app.config['SQLALCHEMY_RECORD_QUERIES'] = cfg.getSqlalchemyRecordQueries()
+    app.config['SQLALCHEMY_POOL_SIZE'] = cfg.getSqlalchemyPoolSize()
+    app.config['SQLALCHEMY_POOL_TIMEOUT'] = cfg.getSqlalchemyPoolTimeout()
+    app.config['SQLALCHEMY_POOL_RECYCLE'] = cfg.getSqlalchemyPoolRecycle()
+    app.config['SQLALCHEMY_MAX_OVERFLOW'] = cfg.getSqlalchemyMaxOverflow()
+    app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = cfg.getSqlalchemyCommitOnTeardown()
+
+    minfo = HelperMaKaCInfo.getMaKaCInfoInstance()
+    if cfg.getIsRoomBookingActive():
+        # which way of imports is better? automatic or explicit
+        # load_room_booking()
+        minfo.setRoomBookingModuleActive(True)
+        from indico.modules.rb.models import *
+    else:
+        minfo.setRoomBookingModuleActive()
+
+    db.init_app(app)
+    with app.app_context():
+        db.create_all()
 
 
 def extend_url_map(app):
@@ -156,6 +185,7 @@ def make_app(set_path=False):
     app = IndicoFlask('indico', static_folder=None)
     fix_root_path(app)
     configure_app(app, set_path)
+    configure_db(app)
     extend_url_map(app)
     add_handlers(app)
     add_blueprints(app)

@@ -49,8 +49,7 @@ from MaKaC import plugins
 from MaKaC.plugins.RoomBooking.default.reservation import ResvHistoryEntry
 from MaKaC.plugins.RoomBooking.default.room import Room
 from MaKaC.plugins.RoomBooking.rb_roomblocking import RoomBlockingBase
-from MaKaC.plugins.RoomBooking.default.roomblocking import (RoomBlocking,
-                                                            RoomBlockingPrincipal,
+from MaKaC.plugins.RoomBooking.default.roomblocking import (RoomBlockingPrincipal,
                                                             BlockedRoom)
 from MaKaC.plugins.RoomBooking.common import getRoomBookingOption
 from MaKaC.common.mail import GenericMailer
@@ -2453,9 +2452,10 @@ class RHRoomBookingBlockingList(RHRoomBookingBase):
 class RHRoomBookingBlockingForm(RHRoomBookingBase):
 
     def _isOverlapping(self):
-        for block in RoomBlocking.getAll():
-            # time overlapping
-            if not (block.startDate > self._endDate or block.endDate < self._startDate):
+        # date overlapping
+        for block in RoomBlockingBase.getByDateSpan(self._startDate, self._endDate):
+            # check for itself
+            if self._block.id != block.id:
                 # room overlapping
                 if any(block.getBlockedRoom(room) for room in self._blockedRooms):
                     return True

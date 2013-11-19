@@ -101,7 +101,7 @@ def configure_db(app):
     app.config['SQLALCHEMY_DATABASE_URI'] = cfg.getSqlalchemyDatabaseUri()
 
     # options to care
-    app.config['SQLALCHEMY_ECHO'] = cfg.getSqalchemyEcho()
+    app.config['SQLALCHEMY_ECHO'] = cfg.getSqlalchemyEcho()
     app.config['SQLALCHEMY_RECORD_QUERIES'] = cfg.getSqlalchemyRecordQueries()
     app.config['SQLALCHEMY_POOL_SIZE'] = cfg.getSqlalchemyPoolSize()
     app.config['SQLALCHEMY_POOL_TIMEOUT'] = cfg.getSqlalchemyPoolTimeout()
@@ -111,8 +111,6 @@ def configure_db(app):
 
     minfo = HelperMaKaCInfo.getMaKaCInfoInstance()
     if cfg.getIsRoomBookingActive():
-        # which way of imports is better? automatic or explicit
-        # load_room_booking()
         minfo.setRoomBookingModuleActive(True)
         from indico.modules.rb.models import *
     else:
@@ -175,7 +173,7 @@ def handle_exception(exception):
     return WErrorWSGI(msg).getHTML(), 500
 
 
-def make_app(set_path=False):
+def make_app(set_path=False, db_setup=True):
     # If you are reading this code and wonder how to access the app:
     # >>> from flask import current_app as app
     # This only works while inside an application context but you really shouldn't have any
@@ -185,7 +183,8 @@ def make_app(set_path=False):
     app = IndicoFlask('indico', static_folder=None)
     fix_root_path(app)
     configure_app(app, set_path)
-    configure_db(app)
+    if db_setup:
+        configure_db(app)
     extend_url_map(app)
     add_handlers(app)
     add_blueprints(app)

@@ -28,7 +28,7 @@ from werkzeug.urls import url_parse
 
 from indico.core.config import Config
 from MaKaC.common.info import HelperMaKaCInfo
-from indico.core.logging import Logger
+from indico.core.logger import Logger
 from MaKaC.i18n import _
 from MaKaC.plugins.base import RHMapMemory
 from MaKaC.webinterface.pages.error import WErrorWSGI

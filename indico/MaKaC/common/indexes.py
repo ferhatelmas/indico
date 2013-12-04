@@ -28,7 +28,7 @@ from MaKaC.common.timezoneUtils import date2utctimestamp, datetimeToUnixTime
 from MaKaC.errors import MaKaCError
 from datetime import datetime, timedelta
 from pytz import timezone
-from indico.core.logging import Logger
+from indico.core.logger import Logger
 from MaKaC.plugins.base import extension_point
 from zope.index.text import textindex
 from indico.util.string import remove_accents

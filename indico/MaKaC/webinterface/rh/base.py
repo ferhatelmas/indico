@@ -357,12 +357,6 @@ class RH(RequestHandlerBase):
     def _processUnexpectedError(self, e):
         """Unexpected errors"""
 
-<<<<<<< HEAD
-        if Config.getInstance().getEmbeddedWebserver() or Config.getInstance().getPropagateAllExceptions():
-            # Re-raise to get the nice werkzeug exception view
-            raise
-        return errors.WPUnexpectedError(self).display()
-=======
         self._responseUtil.redirect = None
         self._responseUtil.status = 500
         if Config.getInstance().getEmbeddedWebserver() or Config.getInstance().getPropagateAllExceptions():
@@ -374,16 +368,12 @@ class RH(RequestHandlerBase):
         """Unexpected errors"""
 
         return errors.WPHostnameResolveError(self).display()
->>>>>>> 7801393... [FTR] Dual db in base request handler
 
     @jsonify_error
     def _processAccessError(self, e):
         """Treats access errors occured during the process of a RH."""
 
-<<<<<<< HEAD
-=======
         self._responseUtil.status = 403
->>>>>>> 7801393... [FTR] Dual db in base request handler
         return errors.WPAccessError(self).display()
 
     @jsonify_error
@@ -402,10 +392,7 @@ class RH(RequestHandlerBase):
     def _processModificationError(self, e):
         """Treats modification errors occured during the process of a RH."""
 
-<<<<<<< HEAD
         return errors.WPModificationError(self).display()
-=======
-        return errors.WPModificationError(self)
 
     @jsonify_error
     def _processBadRequestKeyError(self, e):
@@ -421,75 +408,48 @@ class RH(RequestHandlerBase):
         self._responseUtil.content_type = 'application/json'
         self._responseUtil.status = e.code
         return res
->>>>>>> 7801393... [FTR] Dual db in base request handler
 
     @jsonify_error
     def _processConferenceClosedError(self, e):
         """Treats access to modification pages for conferences when they are closed."""
-<<<<<<< HEAD
 
         return WPConferenceModificationClosed(self, e._conf).display()
 
-=======
-        return WPConferenceModificationClosed(self, e._conf)
-
->>>>>>> 7801393... [FTR] Dual db in base request handler
     @jsonify_error
     def _processTimingError(self, e):
         """Treats timing errors occured during the process of a RH."""
 
-<<<<<<< HEAD
         return errors.WPTimingError(self, e).display()
-=======
-        return errors.WPTimingError(self, e)
->>>>>>> 7801393... [FTR] Dual db in base request handler
 
     @jsonify_error
     def _processNoReportError(self, e):
         """Process errors without reporting"""
 
-<<<<<<< HEAD
         return errors.WPNoReportError(self, e).display()
-=======
-        return errors.WPNoReportError(self, e)
->>>>>>> 7801393... [FTR] Dual db in base request handler
 
     @jsonify_error
     def _processNotFoundError(self, e):
         """Process not found error; uses NoReportError template"""
 
-<<<<<<< HEAD
-        return errors.WPNoReportError(self, e).display()
-=======
         self._responseUtil.status = 404
-        return errors.WPNoReportError(self, e)
->>>>>>> 7801393... [FTR] Dual db in base request handler
+        return errors.WPNoReportError(self, e).display()
 
     @jsonify_error
     def _processParentTimingError(self, e):
         """Treats timing errors occured during the process of a RH."""
 
-<<<<<<< HEAD
         return errors.WPParentTimingError(self, e).display()
-=======
-        return errors.WPParentTimingError(self, e)
->>>>>>> 7801393... [FTR] Dual db in base request handler
 
     @jsonify_error
     def _processEntryTimingError(self, e):
         """Treats timing errors occured during the process of a RH."""
 
-<<<<<<< HEAD
         return errors.WPEntryTimingError(self, e).display()
-=======
-        return errors.WPEntryTimingError(self, e)
->>>>>>> 7801393... [FTR] Dual db in base request handler
 
     @jsonify_error
     def _processFormValuesError(self, e):
         """Treats user input related errors occured during the process of a RH."""
 
-<<<<<<< HEAD
         return errors.WPFormValuesError(self, e).display()
 
     @jsonify_error
@@ -502,16 +462,17 @@ class RH(RequestHandlerBase):
     def _processRestrictedHTML(self, e):
 
         return errors.WPRestrictedHTML(self, escape(str(e))).display()
-=======
-        return errors.WPFormValuesError(self, e)
 
     @jsonify_error
     def _processHtmlScriptError(self, e):
-        return errors.WPHtmlScriptError(self, escape(str(e)))
+        """ TODO """
+        return errors.WPHtmlScriptError(self, escape(str(e))).display()
 
     @jsonify_error
     def _processHtmlForbiddenTag(self, e):
-        return errors.WPRestrictedHTML(self, escape(str(e)))
+        """ TODO """
+
+        return errors.WPRestrictedHTML(self, escape(str(e))).display()
 
     def _process_retry_setup(self):
         # clear the fossile cache at the start of each request
@@ -596,7 +557,6 @@ class RH(RequestHandlerBase):
                 self._redisPipeline.execute()
             except RedisError:
                 Logger.get('redis').exception('Could not execute pipeline')
->>>>>>> 7801393... [FTR] Dual db in base request handler
 
     def process(self, params):
         if request.method not in self.HTTP_VERBS:
@@ -628,12 +588,6 @@ class RH(RequestHandlerBase):
                 with retry:
                     if i > 0:
                         self._notify('requestRetry', retry)  # notify components about retry
-
-<<<<<<< HEAD
-                try:
-                    Logger.get('requestHandler').info('[pid=%s] from host %s' % (os.getpid(), request.remote_addr))
-=======
->>>>>>> 7801393... [FTR] Dual db in base request handler
                     try:
                         Logger.get('requestHandler').info('\t[pid=%s] from host %s' % (os.getpid(), request.remote_addr))
                         if i < forced_conflicts:  # raise conflict error if enabled to easily handle conflict error case
@@ -641,111 +595,6 @@ class RH(RequestHandlerBase):
                         profile_name, res = self._process_retry(params, i, profile, forced_conflicts)
                         transaction.commit()
                         break
-<<<<<<< HEAD
-                    except MaKaCError, e:
-                        #DBMgr.getInstance().endRequest(False)
-                        res = self._processError(e)
-                except (ConflictError, POSKeyError):
-                    import traceback
-                    # only log conflict if it wasn't forced
-                    if retry <= (MAX_RETRIES - forcedConflicts):
-                        Logger.get('requestHandler').warning('Conflict in Database! (Request %s)\n%s' % (request, traceback.format_exc()))
-                    self._abortSpecific2RH()
-                    DBMgr.getInstance().abort()
-                    retry -= 1
-                    continue
-                except ClientDisconnected:
-                    Logger.get('requestHandler').warning('Client Disconnected! (Request %s)' % request)
-                    self._abortSpecific2RH()
-                    DBMgr.getInstance().abort()
-                    retry -= 1
-                    time.sleep(10-retry)
-                    continue
-        except KeyAccessError, e:
-            #Key Access error treatment
-            res = self._processKeyAccessError(e)
-            self._endRequestSpecific2RH(False)
-            DBMgr.getInstance().endRequest(False)
-        except AccessError, e:
-            #Access error treatment
-            res = self._processAccessError(e)
-            self._responseUtil.status = 403
-            self._endRequestSpecific2RH(False)
-            DBMgr.getInstance().endRequest(False)
-        except ModificationError, e:
-            #Modification error treatment
-            res = self._processModificationError(e)
-            self._endRequestSpecific2RH(False)
-            DBMgr.getInstance().endRequest(False)
-        except ParentTimingError, e:
-            #Modification error treatment
-            res = self._processParentTimingError(e)
-            self._endRequestSpecific2RH(False)
-            DBMgr.getInstance().endRequest(False)
-        except EntryTimingError, e:
-            #Modification error treatment
-            res = self._processEntryTimingError(e)
-            self._endRequestSpecific2RH(False)
-            DBMgr.getInstance().endRequest(False)
-        except TimingError, e:
-            #Modification error treatment
-            res = self._processTimingError(e)
-            self._endRequestSpecific2RH(False)
-            DBMgr.getInstance().endRequest(False)
-        except FormValuesError, e:
-            #Error filling the values of a form
-            res = self._processFormValuesError(e)
-            self._endRequestSpecific2RH(False)
-            DBMgr.getInstance().endRequest(False)
-        except BadRequestKeyError, e:
-            # The KeyError raised when accessing e.g. request.args['invalid']
-            msg = _('Required argument missing: %s') % e.message
-            res = errors.WPFormValuesError(self, msg).display()
-            self._endRequestSpecific2RH(False)
-            DBMgr.getInstance().endRequest(False)
-        except ConferenceClosedError, e:
-            #Modification error treatment
-            res = self._processConferenceClosedError(e)
-            self._endRequestSpecific2RH(False)
-            DBMgr.getInstance().endRequest(False)
-        except NoReportError, e:
-            #Error without report option
-            res = self._processNoReportError(e)
-            DBMgr.getInstance().endRequest(False)
-        except (NotFoundError, NotFound), e:
-            # File not found error
-            res = self._processNotFoundError(e)
-            self._responseUtil.status = 404
-            DBMgr.getInstance().endRequest(False)
-        except HtmlForbiddenTag, e:
-            res = self._processRestrictedHTML(e)
-            DBMgr.getInstance().endRequest(False)
-        except LaTeXRuntimeException, e:
-            res = self._processLaTeXError(e)
-            DBMgr.getInstance().endRequest(False)
-        except MaKaCError, e:
-            res = self._processGeneralError(e)
-            DBMgr.getInstance().endRequest(False)
-        except ValueError, e:
-            res = self._processGeneralError(e)
-            DBMgr.getInstance().endRequest(False)
-        except OAuthError, e:
-            from indico.util import json
-            res = json.dumps(e.fossilize())
-            header = oauth.build_authenticate_header(realm=Config.getInstance().getBaseSecureURL())
-            self._responseUtil.headers.extend(header)
-            self._responseUtil.content_type = 'application/json'
-            self._responseUtil.status = e.code
-            DBMgr.getInstance().endRequest(False)
-        except Exception, e:
-            res = self._processUnexpectedError(e)
-            self._endRequestSpecific2RH(False)
-            DBMgr.getInstance().endRequest(False)
-
-            #cancels any redirection
-            self._responseUtil.redirect = None
-            self._responseUtil.status = 500
-=======
                     except (ConflictError, POSKeyError):
                         import traceback
                         # only log conflict if it wasn't forced
@@ -764,7 +613,6 @@ class RH(RequestHandlerBase):
             # notify components that the request has finished
             self._notify('requestFinished')
             DBMgr.getInstance().endRequest()
->>>>>>> 7801393... [FTR] Dual db in base request handler
 
         totalTime = (datetime.now() - self._startTime)
         textLog.append('{} : Request ended'.format(totalTime))

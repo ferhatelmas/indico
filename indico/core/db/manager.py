@@ -69,11 +69,9 @@ class DBMgr:
 
     @classmethod
     def getInstance(cls, *args, **kwargs):
-
-        from indico.core.logger import Logger
         pid = os.getpid()
         if os.getpid() not in cls._instances:
-            from MaKaC.common.logger import Logger
+            from indico.core.logger import Logger
             Logger.get('dbmgr').debug('cls._instance is None')
             cls._instances[pid] = DBMgr(*args, **kwargs)
         return cls._instances[pid]

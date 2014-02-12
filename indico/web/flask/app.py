@@ -33,7 +33,7 @@ from MaKaC.i18n import _
 from MaKaC.plugins.base import RHMapMemory
 from MaKaC.webinterface.pages.error import WErrorWSGI
 
-from indico.core.db import db, drop_database, DBMgr
+from indico.core.db import apply_db_loggers, db, drop_database, DBMgr
 from indico.web.flask.util import XAccelMiddleware, make_compat_blueprint, ListConverter
 from indico.web.flask.wrappers import IndicoFlask
 from indico.web.flask.blueprints.legacy import legacy
@@ -82,6 +82,7 @@ def configure_app(app, set_path=False):
         app.config['SERVER_NAME'] = base.netloc
         if base.path:
             app.config['APPLICATION_ROOT'] = base.path
+    app.config['WTF_CSRF_ENABLED'] = False  # for forms of room booking
     static_file_method = cfg.getStaticFileMethod()
     if static_file_method:
         app.config['USE_X_SENDFILE'] = True
@@ -118,6 +119,7 @@ def configure_db(app):
             minfo.setRoomBookingModuleActive()
 
     db.init_app(app)
+    # apply_db_loggers(app.debug)
     if cfg.getCreateTables():
         with app.app_context():
             drop_database(db)  # favorable to `drop_all` under foreign keys
